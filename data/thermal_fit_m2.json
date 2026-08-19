@@ -1,0 +1,7 @@
+{
+  "max_slowdown": 2.02,
+  "tau_s": 1066.0,
+  "measured_steady_slowdown": 2.059,
+  "g0_gflops": 997.4,
+  "g_sustained_gflops": 690.4
+}
