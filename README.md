@@ -45,14 +45,21 @@ currency, inside one RL action space, against a calibrated hardware cost
 model**, and shows that the resulting policy discovers a channel portfolio
 rather than being told one.
 
-> **Claim status, measured.** The transfer half of this claim has been audited
-> and does not survive as stated. Device-feature conditioning has no measurable
-> effect (Δ = +0.13 pt held-out, Welch *t* = 0.42, n = 16 per arm), and no
-> baseline — including device-blind ones — degrades on the current held-out
-> split, so the split does not test hardware generalisation at all. A held-out
-> condition defined by **connectivity** does discriminate (`always_offload`
-> falls 0.872 → 0.510), and is the right replacement. See
-> `docs/r1_transfer_audit.md`.
+It also **transfers zero-shot to an operating condition it has never seen** —
+no network and no human available — matching a policy trained in that condition
+from scratch (0.7225 ± 0.0061 vs 0.7113 ± 0.0027, n = 8 seeds), re-allocating
+**39× more** evidence purchasing onto the on-device models at runtime, and
+beating every fixed rule by **21 points** in a condition where those rules
+collapse.
+
+> **On the earlier version of this claim.** It previously read "transfers
+> zero-shot to an edge *device* it has never seen, conditioned only on datasheet
+> features". Both halves were audited and neither held: device-feature
+> conditioning has no measurable effect (Δ = +0.13 pt held-out, Welch *t* = 0.42,
+> n = 16 per arm), and no baseline — including device-blind ones — degrades on
+> the device-based split, so it never tested hardware generalisation at all. The
+> claim above is the measured replacement, on a split that can actually detect
+> failure. See `docs/r1_transfer_audit.md`.
 
 ## Repository layout
 

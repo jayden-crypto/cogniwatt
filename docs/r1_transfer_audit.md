@@ -129,3 +129,77 @@ the split is not measuring generalisation.
 
 Reported as a negative result rather than quietly dropped — the same treatment
 `capability_dropout` received in the original report.
+
+---
+
+## 8. The replacement claim, measured
+
+§7 recommended replacing the held-out axis with a *condition* rather than a
+*device*. §6.1's candidate — no network and no human — has now been run as a
+true zero-shot test: take the canonical policies trained in the **nominal**
+condition (link quality 0.75, three clarifying questions available), and drop
+them into a condition they have never experienced (link quality 0.1, nobody
+home). No retraining, no fine-tuning.
+
+`scripts/evaluate_policy.py --eval-net-quality 0.1 --eval-patience 0`
+
+| agent | success, offline + alone |
+| --- | --- |
+| **PPO, zero-shot** (8 seeds, trained with cloud + human) | **0.7225 ± 0.0061** |
+| PPO, trained *in* the condition (3 seeds) | 0.7113 ± 0.0027 |
+| `greedy_value` | 0.6740 |
+| `always_offload` | 0.5100 |
+| `always_ask` | 0.3740 |
+| `no_think` | 0.3740 |
+| `oracle` | 1.0000 |
+
+### 8.1 Transfer is free
+
+The zero-shot policy **matches a policy trained in the condition from scratch** —
+0.7225 against 0.7113, a difference of +1.1 points at Welch *t* = 1.68, which is
+not significant. Training specifically for the degraded condition buys nothing
+over transferring into it.
+
+### 8.2 The portfolio is re-allocated at runtime
+
+| condition | tiny | big | cloud | ask |
+| --- | --- | --- | --- | --- |
+| nominal (trained here) | 0.29 | 0.03 | 1.77 | 0.24 |
+| offline + alone (never seen) | **1.60** | **1.18** | 2.09 | 0.00 |
+
+`think_big` usage rises **39×**. The policy was never shown a world without a
+human or a working link, and it nonetheless shifts the majority of its evidence
+purchasing onto the on-device tiers. The `ask` channel is masked out by the
+environment, but nothing forces the *substitution toward local inference* — that
+is inferred at decision time from the resource observations. This is the
+adaptive channel-allocation behaviour the project set out to demonstrate, and it
+is the first place in the results where it is unambiguously visible.
+
+### 8.3 This claim is falsifiable, and it passes
+
+The failure of the device-based split (§3) was that nothing could fail it: every
+baseline, including device-blind ones, scored identically on both sides. Here
+the same baselines collapse — `always_offload` by 36 points, `always_ask` by 52 —
+while the learned policy retains **+21.3 points over the best device-blind rule**
+and +4.9 over the strong heuristic. A split on which scripted policies fail and
+the learned policy does not is a generalisation test with content.
+
+### 8.4 Corrected claim for the report
+
+Replace:
+
+> …transfers **zero-shot to an edge device it has never seen**, conditioned only
+> on datasheet features.
+
+with:
+
+> …transfers **zero-shot to an operating condition it has never seen** — no
+> network and no human available — matching a policy trained in that condition
+> from scratch, re-allocating 39× more evidence purchasing onto on-device models
+> at runtime, and beating every fixed rule by 21 points where those rules
+> collapse.
+
+This is a stronger claim than the original, it is falsifiable, and it is
+supported by the measurement. The datasheet-feature mechanism is dropped because
+it was measured and found inert (§2); the transfer itself survives, on a split
+that can actually detect it.

@@ -87,6 +87,16 @@ def main():
     ap.add_argument("--tags", nargs="+", default=["ff_2m"])
     ap.add_argument("-n", type=int, default=1000)
     ap.add_argument("--out", default="results/eval")
+    # A deliberate condition shift is the zero-shot transfer *experiment*, not a
+    # mistake: train with the cloud and the human available, then take the
+    # policy somewhere neither exists and see whether it copes. These override
+    # the stored training condition and label the run as a transfer test.
+    ap.add_argument("--eval-net-quality", type=float, default=None,
+                    help="evaluate at this link quality regardless of what the "
+                         "policy was trained at (zero-shot condition transfer)")
+    ap.add_argument("--eval-patience", type=int, default=None,
+                    help="evaluate with this many clarifying questions available "
+                         "regardless of training (0 = nobody home)")
     ap.add_argument("--allow-reward-mismatch", action="store_true",
                     help="evaluate anyway when a policy's stored RewardConfig "
                          "differs from the one being evaluated under")
@@ -103,8 +113,16 @@ def main():
         for t in a.tags:
             check_reward_config(t, cks[t]["reward"], rc)
     env_kw = check_env_args(a.tags, cks)
-    if env_kw != {"net_quality_mean": ENV_ARGS["net_quality"],
-                  "patience_max": ENV_ARGS["patience"]}:
+    trained_kw = dict(env_kw)
+    if a.eval_net_quality is not None:
+        env_kw["net_quality_mean"] = float(a.eval_net_quality)
+    if a.eval_patience is not None:
+        env_kw["patience_max"] = int(a.eval_patience)
+    if env_kw != trained_kw:
+        print(f"[transfer] trained in {trained_kw}\n"
+              f"[transfer] evaluating in {env_kw}  <- zero-shot condition shift")
+    elif env_kw != {"net_quality_mean": ENV_ARGS["net_quality"],
+                    "patience_max": ENV_ARGS["patience"]}:
         print(f"[env] evaluating under {env_kw}")
     agents += default_baselines()
 
