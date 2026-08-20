@@ -179,6 +179,36 @@ def cloud_block():
             "</tr></thead><tbody>" + "".join(rows) + "</tbody></table></div>")
 
 
+def isolation_block():
+    f = ROOT / "results/isolation.csv"
+    if not f.exists():
+        return ""
+    d = pd.read_csv(f)
+    name = {"iso_cloud_human": ("yes", "yes"), "iso_cloud_nohum": ("yes", "no"),
+            "iso_nocloud_human": ("no", "yes"), "iso_nocloud_nohum": ("no", "no")}
+    rows = []
+    for _, r in d.iterrows():
+        c, h = name.get(r.arm, ("?", "?"))
+        last = (c == "no" and h == "no")
+        cls = " class='hl'" if last else ""
+        rows.append(
+            f"<tr{cls}><td class='num'>{c}</td><td class='num'>{h}</td>"
+            f"<td class='num'><b>{r.ppo:.3f}</b> ± {r.ppo_se:.3f}</td>"
+            f"<td class='num'>{r.greedy_value:.3f}</td>"
+            f"<td class='num'>{r.always_offload:.3f}</td>"
+            f"<td class='num'>{r.always_ask:.3f}</td>"
+            f"<td class='num'>{r.tiny:.2f}</td>"
+            f"<td class='num{" up" if r.big > 0.5 else ""}'>{r.big:.2f}</td>"
+            f"<td class='num'>{r.offload:.2f}</td><td class='num'>{r.ask:.2f}</td>"
+            f"<td class='num{" up" if r.local_share > 0.5 else ""}'>"
+            f"<b>{r.local_share*100:.0f}%</b></td></tr>")
+    return ("<div class='scroll'><table><thead><tr><th>cloud</th><th>human</th>"
+            "<th>PPO</th><th>greedy</th><th>always_offload</th><th>always_ask</th>"
+            "<th>tiny</th><th>big</th><th>cloud</th><th>ask</th>"
+            "<th>on-device share</th></tr></thead><tbody>"
+            + "".join(rows) + "</tbody></table></div>")
+
+
 def cloud_trained_block():
     """The trained sweep: PPO vs the heuristic AT EACH PRICE."""
     rows, arms = [], []
@@ -398,6 +428,28 @@ def build() -> str:
   same trap that invalidated this report's original headline.</p></div>
   <h3>Trained at each price</h3>
   {cloud_trained_block()}
+  <h3>When <i>is</i> on-device reasoning rational?</h3>
+  <p class="measure">Crossing connectivity with human availability isolates the two
+  alternatives. The hypothesis: the on-device tiers are crowded out by the <b>human</b>, not by a
+  cheap cloud, and local inference only becomes rational when both are gone.</p>
+  {isolation_block()}
+  {fig('fig7_isolation.png', 'Left: which channels the policy buys in each condition. Middle: the on-device share, which only becomes dominant when neither the cloud nor the human is available. Right: unlike the device-based held-out split, this condition discriminates — device-blind scripted policies collapse by 36-52 points.', 'Figure 7 — on-device inference earns its place only as a last resort')}
+  <div class="card"><h3>The human is what crowds out on-device reasoning</h3>
+  <p class="measure">Removing <i>only</i> the human — cloud still fast and available — more than
+  doubles the on-device share (14% → 33%) and lifts <span class="mono">think_big</span> sevenfold.
+  Removing only the cloud barely moves it (14% → 19%) and leaves
+  <span class="mono">think_big</span> at zero; the demand goes to
+  <span class="mono">ask</span> instead. A clarifying question is such good value that it
+  suppresses local reasoning even when the cloud is unreachable. With neither available,
+  on-device share reaches <b>63%</b> and <span class="mono">think_big</span> rises to 0.94 calls
+  per episode.</p></div>
+  <p class="measure"><b>This is also a held-out condition that discriminates.</b> On the current
+  device split no baseline drops by more than 0.9 points, so it tests nothing. Offline and alone,
+  <span class="mono">always_offload</span> falls 36 points and
+  <span class="mono">always_ask</span> 52, while the learned policy keeps a <b>20-point margin</b>
+  over the best device-blind rule — and its advantage over the strong heuristic is the largest
+  anywhere in the project. The held-out axis should be <i>offline and alone</i>, not
+  <i>a different chip</i>.</p>
   <p class="measure">Full argument in <span class="mono">docs/r1_cloud_price.md</span>. The
   conclusion reported is deliberately conditional: the <i>agent</i> claim is checked for
   invariance to the price, while the <i>portfolio</i> claim is a property of the cost model and

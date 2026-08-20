@@ -34,6 +34,8 @@ def main():
     p.add_argument("--no-recurrent", action="store_true")
     p.add_argument("--no-mask", action="store_true")
     p.add_argument("--cap-dropout", type=float, default=0.0)
+    p.add_argument("--patience", type=int, default=3,
+                   help="clarifying questions the human will answer; 0 = nobody home")
     p.add_argument("--net-quality", type=float, default=0.75,
                    help="mean wireless link quality; low values make cloud "
                         "offload unreliable and force on-device reasoning")
@@ -52,7 +54,8 @@ def main():
     env_kwargs = dict(devices=TRAIN_DEVICES, reward=rc,
                       condition_on_device=not a.no_device_cond,
                       capability_dropout=a.cap_dropout,
-                      net_quality_mean=a.net_quality)
+                      net_quality_mean=a.net_quality,
+                      patience_max=a.patience)
     cfg = PPOConfig(total_steps=a.steps, n_envs=a.n_envs, horizon=a.horizon,
                     lr=a.lr, ent_coef=a.ent_coef,
                     ent_coef_final=a.ent_coef_final, seed=a.seed,

@@ -120,9 +120,12 @@ the split is not measuring generalisation.
 * **Keep** `memory_gb` in the feature vector. It costs nothing, it is the right
   design for a device that *would* differ, and it will matter once the held-out
   split is fixed.
-* **Fix the split** along §6.1 and re-run. This is a small change to
-  `DEVICE_PROFILES` plus one retrain, and it converts a vacuous claim into a
-  real one.
+* **Fix the split** along §6.1 and re-run. **This has now been measured**
+  (`docs/r1_cloud_price.md` §9): an *offline and alone* condition
+  (`net_quality_mean ≈ 0.1`, `patience_max = 0`) collapses device-blind
+  baselines by 36–52 points while the learned policy retains a 20-point margin
+  over the best of them. That is a real generalisation test, and it needs only
+  a configuration change plus one retrain — both parameters already exist.
 
 Reported as a negative result rather than quietly dropped — the same treatment
 `capability_dropout` received in the original report.

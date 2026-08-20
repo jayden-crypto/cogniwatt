@@ -37,11 +37,12 @@ def load_agent(tag: str, name=None):
 #: missed here first time round -- every arm evaluated at the 0.75 default,
 #: which made the scripted baselines return byte-identical numbers at every
 #: link quality. That tell is what caught it.
-ENV_ARGS = {"net_quality": 0.75}
+ENV_ARGS = {"net_quality": 0.75, "patience": 3}
 
 
 def env_kwargs_from(tag: str, args: dict) -> dict:
-    return {"net_quality_mean": float(args.get("net_quality", ENV_ARGS["net_quality"]))}
+    return {"net_quality_mean": float(args.get("net_quality", ENV_ARGS["net_quality"])),
+            "patience_max": int(args.get("patience", ENV_ARGS["patience"]))}
 
 
 def check_env_args(tags, cks) -> dict:
@@ -102,7 +103,8 @@ def main():
         for t in a.tags:
             check_reward_config(t, cks[t]["reward"], rc)
     env_kw = check_env_args(a.tags, cks)
-    if env_kw != {"net_quality_mean": ENV_ARGS["net_quality"]}:
+    if env_kw != {"net_quality_mean": ENV_ARGS["net_quality"],
+                  "patience_max": ENV_ARGS["patience"]}:
         print(f"[env] evaluating under {env_kw}")
     agents += default_baselines()
 

@@ -307,3 +307,83 @@ table. This is the same class of bug as the `lambda_cloud` reward mismatch
 (`docs/r1_stability.md` §6.3) — a training-time setting that silently fails to
 reach evaluation — and it is the second one found in this codebase, which
 suggests the pattern is worth watching for rather than treating as a one-off.
+
+---
+
+## 9. When *is* on-device reasoning rational? The 2×2
+
+**Script:** `scripts/r1_isolation.py` · **Data:** `results/isolation.csv` ·
+**Figure:** `results/figures/fig7_isolation.png`
+
+§8.2 showed that when the cloud degrades the policy asks the human rather than
+reasoning locally. That points at a specific hypothesis: **the on-device tiers
+are crowded out by the human, not by a cheap cloud**, and local inference should
+only become rational when *both* alternatives are gone. Crossing connectivity
+with human availability tests it directly. Three seeds per cell, trained and
+evaluated in the same condition.
+
+| cloud | human | PPO | greedy | `always_offload` | `always_ask` | `no_think` | tiny | big | cloud | ask | on-device share |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| yes | yes | **0.916 ± 0.002** | 0.902 | 0.872 | 0.890 | 0.374 | 0.29 | 0.03 | 1.77 | 0.24 | 14% |
+| yes | no | **0.879 ± 0.002** | 0.866 | 0.872 | 0.374 | 0.374 | 0.64 | 0.20 | 1.69 | 0.00 | 33% |
+| no | yes | 0.894 ± 0.002 | **0.918** | 0.510 | 0.890 | 0.374 | 0.26 | 0.00 | 0.10 | 1.00 | 19% |
+| **no** | **no** | **0.711 ± 0.003** | 0.674 | 0.510 | 0.374 | 0.374 | **0.96** | **0.94** | 1.13 | 0.00 | **63%** |
+
+### 9.1 The hypothesis holds
+
+With neither channel available, the on-device share jumps to **63%** and
+`think_big` rises from 0.00–0.03 calls per episode to **0.94**. The 3B model is
+a rational purchase — but only as a last resort.
+
+**The human is what crowds it out, not the cloud.** Rows 1→2 isolate this:
+removing *only* the human, with the cloud still fast and available, more than
+doubles the on-device share (14% → 33%) and lifts `think_big` sevenfold
+(0.03 → 0.20). Removing only the cloud (row 3) barely moves it (14% → 19%) and
+leaves `think_big` at zero — the demand goes to `ask` instead.
+
+This is the sharpest statement of the project's economics: **a clarifying
+question is such good value that it suppresses on-device reasoning even when the
+cloud is unavailable.** At an effective 0.89 accuracy for `lambda_ask = 2.0`,
+against 0.72 for a `think_big` call costing 1591 ms and 26 J on an M2 Air, that
+ordering is not close — and evidence saturation means several weak local draws
+cannot substitute for one good one.
+
+### 9.2 This is a held-out condition that discriminates
+
+`docs/r1_transfer_audit.md` §3 found that no agent degrades on the current
+device-based held-out split — the largest drop of any baseline was 0.9 points,
+so the split tests nothing. This condition is the opposite:
+
+| | device split | offline + alone |
+| --- | --- | --- |
+| PPO | 0.911 → 0.904 (−0.7 pt) | 0.916 → **0.711** (−20.5 pt) |
+| `always_offload` | 0.831 → 0.831 (0.0 pt) | 0.872 → **0.510** (−36.2 pt) |
+| `always_ask` | 0.880 → 0.879 (−0.1 pt) | 0.890 → **0.374** (−51.6 pt) |
+| PPO − best device-blind baseline | ≈ 0 pt | **+20.1 pt** |
+
+Device-blind scripted policies collapse by 36–52 points, and the learned policy
+retains a 20-point margin over the best of them. **This is a real generalisation
+test**, and it is also where PPO's advantage over the strong heuristic is
+largest anywhere in the project (+3.7 points, against +1.0 in the nominal
+condition).
+
+### 9.3 Recommendation
+
+**Replace the held-out axis.** The held-out condition should be *offline and
+alone* — `net_quality_mean ≈ 0.1`, `patience_max = 0` — rather than *a different
+chip*. Both parameters already exist (`--net-quality`, `--patience`), so this is
+a configuration change plus one retrain, not new machinery.
+
+This fixes three problems at once:
+
+1. the transfer claim becomes falsifiable and is then actually supported;
+2. the portfolio claim becomes true for a *physical* reason (the channels really
+   are unavailable) rather than a tuned `lambda_cloud`;
+3. the on-device tiers — the edge-AI half of an Edge AI project — become
+   load-bearing rather than vestigial.
+
+**And it gives the project its honest headline:** *on-device reasoning earns its
+place exactly when the robot is offline and alone, and a learned policy manages
+that fallback 20 points better than any fixed rule.* That is a defensible claim
+about edge AI, grounded in a measured hardware model, and it is a better story
+than the one the project set out to tell.

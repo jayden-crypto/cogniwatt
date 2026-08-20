@@ -20,7 +20,7 @@ API follows Gymnasium v0.29+ (`reset -> (obs, info)`,
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Dict, List, Optional, Sequence, Tuple
 
 import numpy as np
@@ -124,10 +124,17 @@ class HomeGridEdge:
                  condition_on_device: bool = True,
                  capability_dropout: float = 0.0,
                  net_quality_mean: float = 0.75,
+                 patience_max: Optional[int] = None,
                  seed: Optional[int] = None):
         self.devices = list(devices)
         self.cfg = reward or RewardConfig()
         self.oracle = oracle or DialogueOracle()
+        # Human availability. `patience_max = 0` means nobody is home to ask -
+        # the condition that, together with a failed link, leaves on-device
+        # inference as the only surviving evidence channel. See
+        # docs/r1_cloud_price.md section 8.3.
+        if patience_max is not None:
+            self.oracle = replace(self.oracle, patience_max=int(patience_max))
         self.max_steps = int(max_steps)
         self.k_min, self.k_max = int(k_min), int(k_max)
         self.condition_on_device = bool(condition_on_device)

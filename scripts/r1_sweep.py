@@ -80,6 +80,17 @@ ARMS = {
     "net0.5":   (ANNEAL + ["--net-quality", "0.5"],  list(range(3))),
     "net0.25":  (ANNEAL + ["--net-quality", "0.25"], list(range(3))),
     "net0.1":   (ANNEAL + ["--net-quality", "0.1"],  list(range(3))),
+
+    # --- 2x2: is on-device inference EVER the rational purchase? ------------
+    # Section 8.2 found that when the cloud fails the policy asks the human
+    # rather than reasoning locally. This isolates the two alternatives: local
+    # inference should only become necessary when BOTH are gone, which is the
+    # robot alone in the house and offline - the canonical edge-AI deployment,
+    # and the one that justifies on-device models existing at all.
+    "iso_cloud_human":   (ANNEAL + ["--net-quality", "0.9", "--patience", "3"], list(range(3))),
+    "iso_cloud_nohum":   (ANNEAL + ["--net-quality", "0.9", "--patience", "0"], list(range(3))),
+    "iso_nocloud_human": (ANNEAL + ["--net-quality", "0.1", "--patience", "3"], list(range(3))),
+    "iso_nocloud_nohum": (ANNEAL + ["--net-quality", "0.1", "--patience", "0"], list(range(3))),
     "ask0.5":          (["--no-recurrent", "--n-envs", "16", "--lambda-ask", "0.5"], [0]),
     "ask3.5":          (["--no-recurrent", "--n-envs", "16", "--lambda-ask", "3.5"], [0]),
     "ask6":            (["--no-recurrent", "--n-envs", "16", "--lambda-ask", "6.0"], [0]),
