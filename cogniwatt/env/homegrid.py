@@ -123,6 +123,7 @@ class HomeGridEdge:
                  k_min: int = 2, k_max: int = 4,
                  condition_on_device: bool = True,
                  capability_dropout: float = 0.0,
+                 net_quality_mean: float = 0.75,
                  seed: Optional[int] = None):
         self.devices = list(devices)
         self.cfg = reward or RewardConfig()
@@ -138,6 +139,10 @@ class HomeGridEdge:
         # accounting for that channel's saturation ceiling. Randomly removing
         # the big model during training exposes the policy to that regime.
         self.capability_dropout = float(capability_dropout)
+        # Mean wireless link quality. Poor connectivity is what makes local
+        # inference genuinely necessary rather than merely priced-in; see
+        # docs/r1_cloud_price.md section 7.2.
+        self.net_quality_mean = float(net_quality_mean)
 
         self.action_space = Discrete(N_ACTIONS)
         self.observation_space = Box(-1.0, 1.0, (OBS_DIM,), np.float32)
@@ -151,7 +156,8 @@ class HomeGridEdge:
             self.rng = np.random.default_rng(seed)
         self.task = sample_task(self.rng, self.k_min, self.k_max)
         self.device_name = device or str(self.rng.choice(self.devices))
-        self.ved = VirtualEdgeDevice(self.device_name, self.rng)
+        self.ved = VirtualEdgeDevice(self.device_name, self.rng,
+                                     net_quality_mean=self.net_quality_mean)
         if self.capability_dropout > 0 and self.rng.random() < self.capability_dropout:
             self.ved.reset(disabled_ops={THINK_BIG})
         self.belief = BeliefState(self.task.k, K_MAX)

@@ -30,9 +30,13 @@ def main():
     p.add_argument("--lambda-ask", type=float, default=2.0)
     p.add_argument("--lambda-energy", type=float, default=0.025)
     p.add_argument("--lambda-time", type=float, default=0.1667)
+    p.add_argument("--lambda-cloud", type=float, default=0.5)
     p.add_argument("--no-recurrent", action="store_true")
     p.add_argument("--no-mask", action="store_true")
     p.add_argument("--cap-dropout", type=float, default=0.0)
+    p.add_argument("--net-quality", type=float, default=0.75,
+                   help="mean wireless link quality; low values make cloud "
+                        "offload unreliable and force on-device reasoning")
     p.add_argument("--no-shaping", action="store_true")
     p.add_argument("--no-device-cond", action="store_true")
     p.add_argument("--torch-device", default="auto")
@@ -43,10 +47,12 @@ def main():
     rc = RewardConfig(lambda_ask=a.lambda_ask,
                       lambda_energy=a.lambda_energy,
                       lambda_time=a.lambda_time,
+                      lambda_cloud=a.lambda_cloud,
                       shaping=not a.no_shaping)
     env_kwargs = dict(devices=TRAIN_DEVICES, reward=rc,
                       condition_on_device=not a.no_device_cond,
-                      capability_dropout=a.cap_dropout)
+                      capability_dropout=a.cap_dropout,
+                      net_quality_mean=a.net_quality)
     cfg = PPOConfig(total_steps=a.steps, n_envs=a.n_envs, horizon=a.horizon,
                     lr=a.lr, ent_coef=a.ent_coef,
                     ent_coef_final=a.ent_coef_final, seed=a.seed,

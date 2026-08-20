@@ -30,6 +30,33 @@ def load_agent(tag: str, name=None):
                     use_mask=ck.get("use_mask", True)), ck
 
 
+#: Training args that describe the ENVIRONMENT rather than the optimiser, and
+#: therefore have to be reproduced at evaluation time. Getting this wrong is
+#: silent: the policy still runs, it is just being tested in a world it was not
+#: trained for. `net_quality` was added for the connectivity study and was
+#: missed here first time round -- every arm evaluated at the 0.75 default,
+#: which made the scripted baselines return byte-identical numbers at every
+#: link quality. That tell is what caught it.
+ENV_ARGS = {"net_quality": 0.75}
+
+
+def env_kwargs_from(tag: str, args: dict) -> dict:
+    return {"net_quality_mean": float(args.get("net_quality", ENV_ARGS["net_quality"]))}
+
+
+def check_env_args(tags, cks) -> dict:
+    """All policies in one table must be evaluated in the same world."""
+    seen = {t: env_kwargs_from(t, cks[t].get("args", {})) for t in tags}
+    uniq = {tuple(sorted(v.items())) for v in seen.values()}
+    if len(uniq) > 1:
+        lines = "\n".join(f"    {t}: {v}" for t, v in seen.items())
+        raise SystemExit(
+            f"\nENVIRONMENT MISMATCH - refusing to evaluate these together.\n"
+            f"  The policies were trained in different environments, so a shared\n"
+            f"  baseline column would be meaningless:\n{lines}\n")
+    return next(iter(seen.values()))
+
+
 def check_reward_config(tag: str, stored: dict, active: RewardConfig) -> None:
     """Refuse to compare a policy against a reward it was not trained under.
 
@@ -74,10 +101,13 @@ def main():
     if not a.allow_reward_mismatch:
         for t in a.tags:
             check_reward_config(t, cks[t]["reward"], rc)
+    env_kw = check_env_args(a.tags, cks)
+    if env_kw != {"net_quality_mean": ENV_ARGS["net_quality"]}:
+        print(f"[env] evaluating under {env_kw}")
     agents += default_baselines()
 
     for split, devs in [("train", TRAIN_DEVICES), ("heldout", HELDOUT_DEVICES)]:
-        env_fn = lambda: HomeGridEdge(devices=devs, reward=rc, seed=0)
+        env_fn = lambda: HomeGridEdge(devices=devs, reward=rc, seed=0, **env_kw)
         df = pd.concat([evaluate(ag, env_fn, n_episodes=a.n, devices=list(devs))
                         for ag in agents], ignore_index=True)
         df.to_csv(out / f"eval_{split}.csv", index=False)

@@ -233,13 +233,19 @@ class VirtualEdgeDevice:
     """
 
     def __init__(self, device: str, rng: np.random.Generator | None = None,
-                 thermal: ThermalModel | None = None):
+                 thermal: ThermalModel | None = None,
+                 net_quality_mean: float = 0.75):
         if device not in DEVICE_PROFILES:
             raise KeyError(f"unknown device {device!r}; have {sorted(DEVICE_PROFILES)}")
         self.device = device
         self.profile = DEVICE_PROFILES[device]
         self.rng = rng or np.random.default_rng()
         self.thermal = thermal or ThermalModel()
+        # Mean link quality. Exposed because connectivity, not price, is the
+        # physically honest reason on-device inference becomes necessary: an
+        # offline robot has no cloud at any lambda_cloud. Default 0.75 keeps
+        # every earlier run bit-identical.
+        self.net_quality_mean = float(net_quality_mean)
         self.reset()
 
     # -- lifecycle ---------------------------------------------------------
@@ -252,12 +258,13 @@ class VirtualEdgeDevice:
         self.energy_spent_mJ = 0.0
         self.time_spent_ms = 0.0
         # AR(1) link quality in [0, 1]; low quality -> offload failures
-        self.net_quality = float(np.clip(self.rng.normal(0.75, 0.15), 0.05, 1.0))
+        self.net_quality = float(np.clip(
+            self.rng.normal(self.net_quality_mean, 0.15), 0.05, 1.0))
 
     def step_network(self) -> None:
         """Advance the wireless link. R1 may replace with a netem-derived trace."""
         self.net_quality = float(np.clip(
-            0.9 * self.net_quality + 0.1 * self.rng.normal(0.75, 0.12)
+            0.9 * self.net_quality + 0.1 * self.rng.normal(self.net_quality_mean, 0.12)
             + self.rng.normal(0.0, 0.04), 0.05, 1.0))
 
     # -- cost --------------------------------------------------------------

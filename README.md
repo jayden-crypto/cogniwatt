@@ -42,8 +42,17 @@ Two literatures have never been joined:
 
 CogniWatt prices **human interaction and compute allocation in the same
 currency, inside one RL action space, against a calibrated hardware cost
-model** — and then shows the resulting policy transfers **zero-shot to an edge
-device it has never seen**, conditioned only on datasheet features.
+model**, and shows that the resulting policy discovers a channel portfolio
+rather than being told one.
+
+> **Claim status, measured.** The transfer half of this claim has been audited
+> and does not survive as stated. Device-feature conditioning has no measurable
+> effect (Δ = +0.13 pt held-out, Welch *t* = 0.42, n = 16 per arm), and no
+> baseline — including device-blind ones — degrades on the current held-out
+> split, so the split does not test hardware generalisation at all. A held-out
+> condition defined by **connectivity** does discriminate (`always_offload`
+> falls 0.872 → 0.510), and is the right replacement. See
+> `docs/r1_transfer_audit.md`.
 
 ## Repository layout
 
@@ -59,8 +68,37 @@ cogniwatt/
   analysis/    evaluate.py, pareto.py             [R1]
 scripts/       train.py, run_baselines.py, evaluate_policy.py, make_figures.py
 tests/         test_env.py   12 tests, no pytest dependency
-docs/          lab1_mdp_formalization.md
+docs/          lab1_mdp_formalization.md      problem formalisation      [Lab 1]
+               r1_hardware_calibration.md     M2 anchor, roofline, thermal
+               r1_stability.md                training stability + annealing
+               r1_cloud_price.md              deriving lambda_cloud
+               r1_lab_plan.md                 per-lab deliverable record
+               r1_results.md                  generated results tables
+               r1_report.html                 generated full report
+               R2_HANDOFF.md                  Adit's workstream brief
 ```
+
+## Reproducing the results
+
+```bash
+python3 scripts/r1_sweep.py --arms base bigbatch gru ent03 ent01 entanneal --jobs 4
+```
+
+```bash
+python3 scripts/r1_stability.py && python3 scripts/r1_cloud_price.py
+```
+
+```bash
+python3 scripts/evaluate_policy.py --tags entanneal_s0 -n 1000
+```
+
+```bash
+python3 scripts/make_figures.py && python3 scripts/make_report.py && python3 scripts/make_html_report.py
+```
+
+Both reports are **generated**, never hand-edited — `docs/r1_report.html` once
+drifted months out of date from the code it described, which is how the
+reproducibility problem in `docs/r1_stability.md` §6.3 went unnoticed.
 
 ## Running it
 

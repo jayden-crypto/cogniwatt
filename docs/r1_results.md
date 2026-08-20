@@ -10,7 +10,7 @@ Devices: `m2_air`, `orin_nano`, `orin_nx`, `pi5`  (n=1000 paired episodes per ag
 | agent | success | return ± se | energy (J) | latency (s) | asks | tiny / big / cloud |
 | --- | --- | --- | --- | --- | --- | --- |
 | `oracle` | **1.000** | +3.34 ± 0.06 | 154.9 | 16.7 | 0.00 | 0.00 / 0.00 / 0.00 |
-| `ppo[entanneal_s0]` | **0.911** | -0.09 ± 0.19 | 160.2 | 17.5 | 0.34 | 0.28 / 0.05 / 1.43 |
+| `ppo[entanneal_s0]` | **0.904** | -0.18 ± 0.20 | 159.4 | 17.4 | 0.32 | 0.26 / 0.03 / 1.45 |
 | `greedy_value` | **0.901** | -0.42 ± 0.24 | 166.1 | 18.0 | 0.28 | 0.25 / 0.17 / 1.45 |
 | `always_ask` | **0.880** | -1.31 ± 0.22 | 158.6 | 17.7 | 1.00 | 0.00 / 0.00 / 0.00 |
 | `always_offload` | **0.831** | -1.17 ± 0.25 | 157.2 | 17.2 | 0.00 | 0.00 / 0.00 / 2.00 |
@@ -27,7 +27,7 @@ Devices: `jetson_nano_2gb`, `rtx3060`  (n=1000 paired episodes per agent)
 | agent | success | return ± se | energy (J) | latency (s) | asks | tiny / big / cloud |
 | --- | --- | --- | --- | --- | --- | --- |
 | `oracle` | **1.000** | +3.34 ± 0.06 | 154.9 | 16.7 | 0.00 | 0.00 / 0.00 / 0.00 |
-| `ppo[entanneal_s0]` | **0.904** | -0.22 ± 0.20 | 161.6 | 17.4 | 0.34 | 0.08 / 0.00 / 1.35 |
+| `ppo[entanneal_s0]` | **0.892** | -0.45 ± 0.21 | 161.6 | 17.4 | 0.33 | 0.07 / 0.00 / 1.39 |
 | `greedy_value` | **0.892** | -0.57 ± 0.24 | 164.7 | 17.3 | 0.28 | 0.12 / 0.10 / 1.60 |
 | `always_ask` | **0.879** | -1.45 ± 0.22 | 163.3 | 17.7 | 1.00 | 0.00 / 0.00 / 0.00 |
 | `always_offload` | **0.831** | -1.22 ± 0.25 | 159.0 | 17.2 | 0.00 | 0.00 / 0.00 / 2.00 |
@@ -41,18 +41,50 @@ Devices: `jetson_nano_2gb`, `rtx3060`  (n=1000 paired episodes per agent)
 
 | run | success | note |
 | --- | --- | --- |
-| `ablate_capdrop_s0` | 0.912 | capability dropout 0.35 |
-| `ablate_devcond_s0` | 0.903 | no device-feature conditioning |
-| `ablate_mask_s0` | 0.896 | no invalid-action masking |
-| `ablate_shaping_s0` | 0.914 | no potential-based shaping |
+| `ablate_capdrop_s0` | 0.902 | capability dropout 0.35 |
+| `ablate_capdrop_s1` | 0.906 | capability dropout 0.35 |
+| `ablate_capdrop_s2` | 0.902 | capability dropout 0.35 |
+| `ablate_capdrop_s3` | 0.895 | capability dropout 0.35 |
+| `ablate_devcond_s0` | 0.910 | no device-feature conditioning |
+| `ablate_devcond_s1` | 0.900 | no device-feature conditioning |
+| `ablate_devcond_s10` | 0.903 | no device-feature conditioning |
+| `ablate_devcond_s11` | 0.906 | no device-feature conditioning |
+| `ablate_devcond_s12` | 0.906 | no device-feature conditioning |
+| `ablate_devcond_s13` | 0.901 | no device-feature conditioning |
+| `ablate_devcond_s14` | 0.901 | no device-feature conditioning |
+| `ablate_devcond_s15` | 0.900 | no device-feature conditioning |
+| `ablate_devcond_s2` | 0.905 | no device-feature conditioning |
+| `ablate_devcond_s3` | 0.892 | no device-feature conditioning |
+| `ablate_devcond_s4` | 0.903 | no device-feature conditioning |
+| `ablate_devcond_s5` | 0.900 | no device-feature conditioning |
+| `ablate_devcond_s6` | 0.904 | no device-feature conditioning |
+| `ablate_devcond_s7` | 0.903 | no device-feature conditioning |
+| `ablate_devcond_s8` | 0.898 | no device-feature conditioning |
+| `ablate_devcond_s9` | 0.905 | no device-feature conditioning |
+| `ablate_mask_s0` | 0.888 | no invalid-action masking |
+| `ablate_mask_s1` | 0.882 | no invalid-action masking |
+| `ablate_mask_s2` | 0.885 | no invalid-action masking |
+| `ablate_mask_s3` | 0.889 | no invalid-action masking |
+| `ablate_shaping_s0` | 0.903 | no potential-based shaping |
+| `ablate_shaping_s1` | 0.899 | no potential-based shaping |
+| `ablate_shaping_s2` | 0.900 | no potential-based shaping |
+| `ablate_shaping_s3` | 0.901 | no potential-based shaping |
 | `entanneal_s0` | 0.899 | full method (entropy annealed 0.12 -> 0.01) |
 | `entanneal_s1` | 0.899 | full method (entropy annealed 0.12 -> 0.01) |
+| `entanneal_s10` | 0.907 | full method (entropy annealed 0.12 -> 0.01) |
+| `entanneal_s11` | 0.899 | full method (entropy annealed 0.12 -> 0.01) |
+| `entanneal_s12` | 0.912 | full method (entropy annealed 0.12 -> 0.01) |
+| `entanneal_s13` | 0.898 | full method (entropy annealed 0.12 -> 0.01) |
+| `entanneal_s14` | 0.894 | full method (entropy annealed 0.12 -> 0.01) |
+| `entanneal_s15` | 0.891 | full method (entropy annealed 0.12 -> 0.01) |
 | `entanneal_s2` | 0.908 | full method (entropy annealed 0.12 -> 0.01) |
 | `entanneal_s3` | 0.902 | full method (entropy annealed 0.12 -> 0.01) |
 | `entanneal_s4` | 0.898 | full method (entropy annealed 0.12 -> 0.01) |
 | `entanneal_s5` | 0.907 | full method (entropy annealed 0.12 -> 0.01) |
 | `entanneal_s6` | 0.910 | full method (entropy annealed 0.12 -> 0.01) |
 | `entanneal_s7` | 0.909 | full method (entropy annealed 0.12 -> 0.01) |
+| `entanneal_s8` | 0.903 | full method (entropy annealed 0.12 -> 0.01) |
+| `entanneal_s9` | 0.910 | full method (entropy annealed 0.12 -> 0.01) |
 | `main_s0` | 0.918 | constant ent_coef 0.12 |
 
 The full method is shown across all 8 seeds (0.898-0.910); the ablations are one seed each. Since the entropy fix (docs/r1_stability.md) these no longer collapse, so the differences here are small and need several seeds each before any of them can be called load-bearing.
