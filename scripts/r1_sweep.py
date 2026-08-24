@@ -91,6 +91,15 @@ ARMS = {
     "iso_cloud_nohum":   (ANNEAL + ["--net-quality", "0.9", "--patience", "0"], list(range(3))),
     "iso_nocloud_human": (ANNEAL + ["--net-quality", "0.1", "--patience", "3"], list(range(3))),
     "iso_nocloud_nohum": (ANNEAL + ["--net-quality", "0.1", "--patience", "0"], list(range(3))),
+
+    # --- R2 integration ----------------------------------------------------
+    # Trains on the measured local tiers with offload/ask still at R1
+    # placeholders. This is the configuration R2 warns about in handback
+    # section 3.2: think_big measured at 0.568 against an unmeasured offload at
+    # 0.88 doubles the apparent big->offload competence gap. Run precisely to
+    # find out whether the action mix collapses onto the cloud, which decides
+    # whether R1 retrains now or waits for the cloud measurement.
+    "r2prov": (ANNEAL + ["--dialogue", "data/dialogue_provisional.npz"], list(range(3))),
     "ask0.5":          (["--no-recurrent", "--n-envs", "16", "--lambda-ask", "0.5"], [0]),
     "ask3.5":          (["--no-recurrent", "--n-envs", "16", "--lambda-ask", "3.5"], [0]),
     "ask6":            (["--no-recurrent", "--n-envs", "16", "--lambda-ask", "6.0"], [0]),

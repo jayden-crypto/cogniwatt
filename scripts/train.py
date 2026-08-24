@@ -36,6 +36,9 @@ def main():
     p.add_argument("--cap-dropout", type=float, default=0.0)
     p.add_argument("--patience", type=int, default=3,
                    help="clarifying questions the human will answer; 0 = nobody home")
+    p.add_argument("--dialogue", default=None,
+                   help="path to R2's frozen dialogue artefact (.npz); omit to "
+                        "use the R1 placeholder constants")
     p.add_argument("--net-quality", type=float, default=0.75,
                    help="mean wireless link quality; low values make cloud "
                         "offload unreliable and force on-device reasoning")
@@ -51,7 +54,14 @@ def main():
                       lambda_time=a.lambda_time,
                       lambda_cloud=a.lambda_cloud,
                       shaping=not a.no_shaping)
-    env_kwargs = dict(devices=TRAIN_DEVICES, reward=rc,
+    oracle = None
+    if a.dialogue:
+        from cogniwatt.interfaces.dialogue import load_precomputed
+        oracle = load_precomputed(a.dialogue, strict=True)
+        print(f"dialogue artefact: {a.dialogue}")
+        print(f"  measured tiers: {oracle.meta.get('tiers_measured', '?')}")
+        print(f"  placeholders:   {oracle.meta.get('tiers_inherited_from_r1_placeholders', '?')}")
+    env_kwargs = dict(devices=TRAIN_DEVICES, reward=rc, oracle=oracle,
                       condition_on_device=not a.no_device_cond,
                       capability_dropout=a.cap_dropout,
                       net_quality_mean=a.net_quality,
