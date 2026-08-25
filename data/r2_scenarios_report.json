@@ -1,0 +1,91 @@
+{
+  "n_scenarios": 660,
+  "n_cores": 58,
+  "by_k": {
+    "2": 220,
+    "3": 220,
+    "4": 220
+  },
+  "by_noun": {
+    "mug": 111,
+    "book": 111,
+    "bottle": 108,
+    "bowl": 108,
+    "remote": 111,
+    "cushion": 111
+  },
+  "by_receptacle": {
+    "shelf": 165,
+    "drawer": 171,
+    "sink": 84,
+    "table": 144,
+    "bin": 96
+  },
+  "by_family": {
+    "already_satisfied": 12,
+    "affordance": 72,
+    "state_blocks": 72,
+    "ownership": 72,
+    "recency": 72,
+    "proximity": 72,
+    "condition": 72,
+    "purpose_fit": 72,
+    "exclusion": 72,
+    "salience": 72
+  },
+  "by_difficulty": {
+    "easy": 57,
+    "medium": 363,
+    "hard": 240
+  },
+  "by_form_idx": {
+    "3": 15,
+    "0": 321,
+    "1": 162,
+    "2": 162
+  },
+  "true_idx_by_k": {
+    "2": {
+      "1": 112,
+      "0": 108
+    },
+    "3": {
+      "0": 73,
+      "1": 74,
+      "2": 73
+    },
+    "4": {
+      "3": 58,
+      "0": 54,
+      "1": 54,
+      "2": 54
+    }
+  },
+  "true_color": {
+    "white": 111,
+    "black": 108,
+    "striped": 111,
+    "red": 108,
+    "blue": 114,
+    "green": 108
+  },
+  "target_is_longest_rate": {
+    "2": {
+      "observed": 0.5364,
+      "chance": 0.5
+    },
+    "3": {
+      "observed": 0.3682,
+      "chance": 0.3333
+    },
+    "4": {
+      "observed": 0.2909,
+      "chance": 0.25
+    }
+  },
+  "always_zero_accuracy": {
+    "2": 0.4909,
+    "3": 0.3318,
+    "4": 0.2455
+  }
+}

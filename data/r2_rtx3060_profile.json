@@ -1,0 +1,30 @@
+{
+  "device": "rtx3060",
+  "device_measured": "NVIDIA GeForce RTX 3050 Laptop GPU",
+  "gpu_name": "NVIDIA GeForce RTX 3050 Laptop GPU",
+  "vram_mib": 4096,
+  "vram_gb": 4.0,
+  "driver_version": "595.79",
+  "power_limit_w": null,
+  "on_mains": true,
+  "ambient_c": null,
+  "fan_curve": "default",
+  "sampler_hz": 10.0,
+  "sampler_effective_hz": 3.27,
+  "p_idle_w": 11.25,
+  "idle": {
+    "p_idle_w": 11.25,
+    "p_idle_iqr": [
+      11.12,
+      11.35
+    ],
+    "clocks_sm_mhz_median": 1500.0,
+    "temp_c_median": 48.0,
+    "n_samples": 98,
+    "effective_hz": 3.27
+  },
+  "date": "2026-08-20 13:35:38",
+  "ops": {},
+  "models": {},
+  "notes": "energy is measured above idle; offload energy is radio-side and modelled by R1, not measured here. The file name follows the handoff contract; `device_measured` is the real part."
+}

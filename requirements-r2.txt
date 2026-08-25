@@ -1,0 +1,31 @@
+# R2 (conversational AI) extra dependencies.
+# Kept out of the main requirements so Jayden's M2 Air never installs
+# CUDA-specific packages. Existing code needs only the first block.
+
+# --- already required by R1 ---
+numpy
+scipy
+pandas
+matplotlib
+
+# --- R2: analysis ---
+pyarrow                 # parquet for the raw-response table; scripts fall
+                        # back to gzipped CSV if it is absent
+
+# --- R2: local quantised tiers (think_tiny, think_big) ---
+# GGUF via llama.cpp, NOT transformers: the project's claim is about quantised
+# on-device models, and Q8/Q4 GGUF is what ships on edge hardware.
+# On Windows + CUDA install the prebuilt wheel rather than building from source:
+#   pip install llama-cpp-python \
+#     --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cu124
+llama-cpp-python
+
+# --- R2: cloud tier (offload) ---
+anthropic
+
+# --- R2: ASR pipeline (DEFAULT_ASR_WER) ---
+faster-whisper
+soundfile
+
+# --- R2: semantic confusability matrix ---
+sentence-transformers

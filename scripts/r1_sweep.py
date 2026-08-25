@@ -100,6 +100,10 @@ ARMS = {
     # find out whether the action mix collapses onto the cloud, which decides
     # whether R1 retrains now or waits for the cloud measurement.
     "r2prov": (ANNEAL + ["--dialogue", "data/dialogue_provisional.npz"], list(range(3))),
+    # The real thing: R2's delivered artefact, 660 scenarios after the
+    # contested-family drop, measured asr_wer. offload/ask accuracy are still
+    # R1 placeholders and meta_json says so.
+    "r2real": (ANNEAL + ["--dialogue", "data/dialogue_measured.npz"], list(range(4))),
     "ask0.5":          (["--no-recurrent", "--n-envs", "16", "--lambda-ask", "0.5"], [0]),
     "ask3.5":          (["--no-recurrent", "--n-envs", "16", "--lambda-ask", "3.5"], [0]),
     "ask6":            (["--no-recurrent", "--n-envs", "16", "--lambda-ask", "6.0"], [0]),

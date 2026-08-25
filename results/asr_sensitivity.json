@@ -1,0 +1,102 @@
+{
+  "measured_asr_wer": 0.0337,
+  "k": 3,
+  "costs": {
+    "think_tiny": 0.15100312999999999,
+    "think_big": 0.9140672100000001,
+    "offload": 0.5578261664166295,
+    "ask": 2.227655
+  },
+  "rows": [
+    {
+      "asr_wer": 0.0337,
+      "ask_accuracy": 0.937311,
+      "cost_ask": 2.227655,
+      "cost_big": Infinity,
+      "cost_offload": 1.6734784992498886,
+      "cost_tiny": Infinity,
+      "ceiling_big": 0.5459083092083679,
+      "cheapest": "offload"
+    },
+    {
+      "asr_wer": 0.05,
+      "ask_accuracy": 0.9215,
+      "cost_ask": 2.227655,
+      "cost_big": Infinity,
+      "cost_offload": 1.6734784992498886,
+      "cost_tiny": Infinity,
+      "ceiling_big": 0.5459083092083679,
+      "cheapest": "offload"
+    },
+    {
+      "asr_wer": 0.08,
+      "ask_accuracy": 0.8924,
+      "cost_ask": Infinity,
+      "cost_big": Infinity,
+      "cost_offload": 1.6734784992498886,
+      "cost_tiny": Infinity,
+      "ceiling_big": 0.5443869372421741,
+      "cheapest": "offload"
+    },
+    {
+      "asr_wer": 0.1,
+      "ask_accuracy": 0.873,
+      "cost_ask": Infinity,
+      "cost_big": Infinity,
+      "cost_offload": 1.6734784992498886,
+      "cost_tiny": Infinity,
+      "ceiling_big": 0.5443869372421741,
+      "cheapest": "offload"
+    },
+    {
+      "asr_wer": 0.124,
+      "ask_accuracy": 0.84972,
+      "cost_ask": Infinity,
+      "cost_big": Infinity,
+      "cost_offload": 1.6734784992498886,
+      "cost_tiny": Infinity,
+      "ceiling_big": 0.5443869372421741,
+      "cheapest": "offload"
+    },
+    {
+      "asr_wer": 0.15,
+      "ask_accuracy": 0.8245,
+      "cost_ask": Infinity,
+      "cost_big": Infinity,
+      "cost_offload": 1.6734784992498886,
+      "cost_tiny": Infinity,
+      "ceiling_big": 0.5443869372421741,
+      "cheapest": "offload"
+    },
+    {
+      "asr_wer": 0.2,
+      "ask_accuracy": 0.776,
+      "cost_ask": Infinity,
+      "cost_big": Infinity,
+      "cost_offload": 1.6734784992498886,
+      "cost_tiny": Infinity,
+      "ceiling_big": 0.5443869372421741,
+      "cheapest": "offload"
+    },
+    {
+      "asr_wer": 0.3,
+      "ask_accuracy": 0.6789999999999999,
+      "cost_ask": Infinity,
+      "cost_big": Infinity,
+      "cost_offload": 1.6734784992498886,
+      "cost_tiny": Infinity,
+      "ceiling_big": 0.5443869372421741,
+      "cheapest": "offload"
+    },
+    {
+      "asr_wer": 0.4,
+      "ask_accuracy": 0.582,
+      "cost_ask": Infinity,
+      "cost_big": Infinity,
+      "cost_offload": 1.6734784992498886,
+      "cost_tiny": Infinity,
+      "ceiling_big": 0.5443869372421741,
+      "cheapest": "offload"
+    }
+  ]
+}
