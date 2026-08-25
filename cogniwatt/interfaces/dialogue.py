@@ -84,6 +84,15 @@ class DialogueOracle:
     tier_accuracy: Dict[str, float] = field(default_factory=lambda: dict(TIER_ACCURACY))
     evidence_decay: Dict[str, float] = field(default_factory=lambda: dict(EVIDENCE_DECAY))
     asr_wer: float = DEFAULT_ASR_WER
+    #: Referent recovery rate: how often the pipeline recovers the *correct
+    #: referent* from a noisy transcript. Takes precedence over `asr_wer` when
+    #: present. R2 measured both and showed they come apart badly under noise --
+    #: at 0 dB, WER 0.426 but recovery 0.917 (docs/R1_REPLY_2.md section 3.2).
+    #: The env does not consume a word error rate; it consumes "did the `ask`
+    #: action deliver the right referent", so recovery is the correct term.
+    #: Using (1 - wer) systematically understates the channel in noise, which is
+    #: exactly the regime the degraded-condition held-out axis lives in.
+    asr_recovery: Optional[float] = None
     patience_max: int = 3
     #: Optional per-candidate-count accuracy, {tier: {k: acc}}. Grounding gets
     #: harder as the candidate set grows, and R2 measures it per k. When absent
@@ -110,7 +119,9 @@ class DialogueOracle:
             a = self.tier_accuracy[tier]
         if tier == ASK:
             # A misrecognised answer is worse than no answer; scale toward chance.
-            a = a * (1.0 - self.asr_wer)
+            # Prefer measured referent recovery over (1 - WER); see `asr_recovery`.
+            a = a * (self.asr_recovery if self.asr_recovery is not None
+                     else (1.0 - self.asr_wer))
         return float(np.clip(a, 1e-3, 1.0 - 1e-3))
 
     def likelihood(self, tier: str, k: int,
@@ -147,7 +158,8 @@ class DialogueOracle:
 
 #: Keys R2's artefact must provide. See docs/R2_HANDOFF.md for the full spec.
 REQUIRED_KEYS = ("tiers", "accuracy", "evidence_decay", "asr_wer")
-OPTIONAL_KEYS = ("k_values", "accuracy_by_k", "n_samples", "meta_json")
+OPTIONAL_KEYS = ("k_values", "accuracy_by_k", "n_samples", "meta_json",
+                 "asr_recovery")
 
 
 def load_precomputed(path: str, strict: bool = False) -> DialogueOracle:
@@ -159,6 +171,9 @@ def load_precomputed(path: str, strict: bool = False) -> DialogueOracle:
     accuracy       (T,)      float  top-1 grounding accuracy, pooled over k
     evidence_decay (T,)      float  gamma per tier, in (0, 1]
     asr_wer        scalar    float  measured word error rate of the ASR pipeline
+    asr_recovery   scalar    float  optional, referent recovery rate; preferred
+                                    over asr_wer because the env consumes
+                                    "was the right referent recovered", not WER
     k_values       (Kn,)     int    optional, e.g. [2, 3, 4]
     accuracy_by_k  (T, Kn)   float  optional, accuracy per tier per candidate count
     n_samples      (T, Kn)   int    optional, provenance for confidence intervals
@@ -200,10 +215,11 @@ def load_precomputed(path: str, strict: bool = False) -> DialogueOracle:
             by_k[t] = {k: float(v) for k, v in zip(ks, row)}
 
     meta = json.loads(str(d["meta_json"])) if "meta_json" in d else {}
+    recovery = float(d["asr_recovery"]) if "asr_recovery" in d else None
 
     # Placeholders survive for any tier R2 has not yet measured.
     full_acc = dict(TIER_ACCURACY); full_acc.update(acc)
     full_decay = dict(EVIDENCE_DECAY); full_decay.update(decay)
     return DialogueOracle(tier_accuracy=full_acc, evidence_decay=full_decay,
-                          asr_wer=float(d["asr_wer"]), accuracy_by_k=by_k,
-                          meta=meta)
+                          asr_wer=float(d["asr_wer"]), asr_recovery=recovery,
+                          accuracy_by_k=by_k, meta=meta)

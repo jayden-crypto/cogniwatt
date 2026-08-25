@@ -24,17 +24,30 @@ NOUNS = ("mug", "book", "bottle", "bowl", "remote", "cushion")
 COLORS = ("red", "blue", "green", "white", "black", "striped")
 RECEPTACLES = ("shelf", "sink", "table", "drawer", "bin")
 
-# Colour confusability. R2 replaces this with cosine similarity between CLIP /
-# sentence-embedding vectors of the full referring expressions, so that the
-# SLM's errors land on genuinely confusable distractors.
+# Colour confusability -- now UNIFORM, on measurement.
+#
+# This was a hand-written matrix (base 0.15 with six pairs set 0.25-0.55, e.g.
+# red/striped 0.55) encoding the assumption that a model's errors land on
+# semantically similar distractors. R2 tested that assumption directly and it
+# does not hold on this task: over 6 672 measured errors, the similarity of the
+# chosen distractor was 0.1025 against 0.1025 for the average distractor -- an
+# excess of -0.00006 (docs/R1_HANDBACK.md section 4).
+#
+# R2's colour-confusion matrix is also flat by construction, because colours are
+# assigned round-robin and never mentioned in the descriptions, so the referent
+# is never recoverable from colour. That is a successful check that the dataset
+# has no colour shortcut rather than a measurement of confusability.
+#
+# A uniform off-diagonal is therefore the empirically supported choice, and the
+# hand-written structure was adding signal the errors do not have. R2 also
+# delivered a perceptual CIELAB matrix; it stays unwired, because finding (2)
+# above says model errors will not follow it either.
+#
+# Kept as a constant rather than deleted so `Task.similarity` keeps its type and
+# a future measured matrix can be dropped straight in.
 _C = len(COLORS)
 COLOR_SIM = np.full((_C, _C), 0.15, dtype=np.float64)
 np.fill_diagonal(COLOR_SIM, 1.0)
-for a, b, s in [("red", "striped", 0.55), ("blue", "green", 0.45),
-                ("white", "striped", 0.50), ("black", "blue", 0.40),
-                ("green", "striped", 0.35), ("white", "black", 0.25)]:
-    i, j = COLORS.index(a), COLORS.index(b)
-    COLOR_SIM[i, j] = COLOR_SIM[j, i] = s
 
 
 # --------------------------------------------------------------------------

@@ -104,6 +104,12 @@ ARMS = {
     # contested-family drop, measured asr_wer. offload/ask accuracy are still
     # R1 placeholders and meta_json says so.
     "r2real": (ANNEAL + ["--dialogue", "data/dialogue_measured.npz"], list(range(4))),
+    # Canonical after the two corrections R2's measurement forced: uniform
+    # COLOR_SIM (their section 4 finding) and referent recovery in place of
+    # (1 - WER) for the ask channel (their section 3.2). Still measured-local
+    # against placeholder offload/ask accuracy.
+    "r2final": (ANNEAL + ["--dialogue", "data/dialogue_measured_recovery.npz"],
+                list(range(4))),
     "ask0.5":          (["--no-recurrent", "--n-envs", "16", "--lambda-ask", "0.5"], [0]),
     "ask3.5":          (["--no-recurrent", "--n-envs", "16", "--lambda-ask", "3.5"], [0]),
     "ask6":            (["--no-recurrent", "--n-envs", "16", "--lambda-ask", "6.0"], [0]),
