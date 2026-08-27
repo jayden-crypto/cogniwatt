@@ -228,6 +228,67 @@ for "the failure is pragmatics, not perception".
 
 ---
 
+## 3F. Reasoning tokens — the models were not being rushed
+
+R1 reply 5 §3: every number so far came from a prompt asking for a bare letter,
+about five output tokens. That measures what these models do when told to
+answer immediately, not what they can do when allowed to think — and the
+obvious reviewer objection to §3B is "you never let them reason."
+
+Same scenarios, same parser family, same permutations, one new template:
+*"Think step by step about which one they meant. Then give your answer as a
+single letter on the last line."* 660 scenarios × 2 tiers, N=1.
+
+| tier | direct | reasoning | paired delta | 95 % CI | McNemar |
+| --- | --- | --- | --- | --- | --- |
+| Llama-3.2-3B Q4_K_M | 0.603 | **0.544** | **−0.059** | [−0.119, +0.002] | **p = 0.016** |
+| Qwen2.5-7B Q4_K_M | 0.782 | **0.805** | +0.023 | [−0.020, +0.065] | p = 0.242 |
+
+> **Reasoning significantly *harms* the 3B and does nothing reliable for the
+> 7B — at 70–90× the latency.** The 3B result is not noise: p = 0.016 on a
+> paired test over identical permutations. A small model given room to reason
+> talks itself out of answers it would otherwise have got right.
+
+### The price of thinking
+
+| tier | mean output tokens | vs direct | mean latency | vs direct |
+| --- | --- | --- | --- | --- |
+| 3B | 183.9 | ~37× | 2,943 ms | 87× |
+| 7B | 135.0 (median 171) | ~27× | 10,416 ms | 68× |
+
+Zero responses hit the 400-token cap, so nothing was truncated before its
+answer line and the measurement is not distorted by the ceiling on output.
+
+### An internal control the 7B supplied by itself
+
+In **34.4 %** of cases (227 of 660) the 7B ignored the instruction to think and
+simply answered — under 20 output tokens. That splits the reasoning condition
+in two, with the same prompt and the same scenarios:
+
+* accuracy when it **skipped** reasoning: **0.811**
+* accuracy when it **did** reason: **0.801**
+
+Identical within noise. The gain is not merely small, it is absent even when
+the model chooses to reason. This is a within-condition control that no
+separate experiment would have produced.
+
+### It is not a near miss
+
+Feeding the reasoning accuracy back through the belief filter at the measured
+gamma: 0.805 pooled gives a ceiling of **0.782**, and even the best per-k
+figure (0.830) reaches only 0.813. Both short of 0.85.
+
+To clear the threshold at its measured gamma, the 7B would need roughly
+**0.88 single-query accuracy**. It sits at 0.782–0.805. Reasoning moved it
++0.023. The gap is about eight points and tokens closed a quarter of one.
+
+> **The §3B conclusion now reads: no model available to a domestic robot can
+> ground these expressions confidently enough to act — and not because it was
+> not allowed to think.** That is a much harder claim to dismiss than one
+> measured at five output tokens.
+
+---
+
 ## 3E. Quantisation ablation — it is scale, not Q4
 
 R1 reply 3 §6 asked whether `think_big` at 0.603 is a statement about *3B-scale

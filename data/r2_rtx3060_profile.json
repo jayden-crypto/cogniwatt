@@ -7,24 +7,132 @@
   "driver_version": "595.79",
   "power_limit_w": null,
   "on_mains": true,
-  "ambient_c": null,
+  "ambient_c": 24.0,
   "fan_curve": "default",
   "sampler_hz": 10.0,
-  "sampler_effective_hz": 3.27,
-  "p_idle_w": 11.25,
+  "sampler_effective_hz": 3.38,
+  "p_idle_w": 12.34,
   "idle": {
-    "p_idle_w": 11.25,
+    "p_idle_w": 12.34,
     "p_idle_iqr": [
-      11.12,
-      11.35
+      12.25,
+      12.39
     ],
     "clocks_sm_mhz_median": 1500.0,
-    "temp_c_median": 48.0,
-    "n_samples": 98,
-    "effective_hz": 3.27
+    "temp_c_median": 59.0,
+    "n_samples": 203,
+    "effective_hz": 3.38
   },
-  "date": "2026-08-20 13:35:38",
-  "ops": {},
-  "models": {},
-  "notes": "energy is measured above idle; offload energy is radio-side and modelled by R1, not measured here. The file name follows the handoff contract; `device_measured` is the real part."
+  "date": "2026-08-26 18:21:36",
+  "ops": {
+    "think_tiny": {
+      "latency_ms": {
+        "median": 19.623222487990333,
+        "iqr": [
+          14.406974880356492,
+          19.81948241631837
+        ],
+        "p95": 25.08009478473353,
+        "min": 13.92256985635733,
+        "max": 29.424864593247158,
+        "n": 50
+      },
+      "energy_mJ": {
+        "median": 836.9266527412503,
+        "iqr": [
+          724.7006103099077,
+          854.9244469460829
+        ],
+        "p95": 1160.8926320442522,
+        "min": 529.7671239482679,
+        "max": 1262.0621001024156,
+        "n": 50
+      },
+      "calls_per_burst": 209,
+      "reps": 50,
+      "warmup_discarded": 5,
+      "clocks_sm_mhz_median": 1965.0,
+      "temp_c_max": 84.0,
+      "vram_used_mib": 877.0,
+      "vram_total_mib": 4096.0,
+      "near_vram_limit": false,
+      "valid_device_anchor": true,
+      "model": "qwen2.5-0.5b-instruct-q8_0.gguf"
+    },
+    "think_big": {
+      "latency_ms": {
+        "median": 33.96013865986066,
+        "iqr": [
+          33.84014458762189,
+          34.09371365968273
+        ],
+        "p95": 50.41761742265698,
+        "min": 30.49723608251277,
+        "max": 50.561561855576336,
+        "n": 50
+      },
+      "energy_mJ": {
+        "median": 1674.5790573253803,
+        "iqr": [
+          1629.983850201801,
+          1742.4822839901772
+        ],
+        "p95": 2446.523702434626,
+        "min": 1596.404154903997,
+        "max": 2656.6704356793857,
+        "n": 50
+      },
+      "calls_per_burst": 97,
+      "reps": 50,
+      "warmup_discarded": 5,
+      "clocks_sm_mhz_median": 1665.0,
+      "temp_c_max": 90.0,
+      "vram_used_mib": 2373.0,
+      "vram_total_mib": 4096.0,
+      "near_vram_limit": false,
+      "valid_device_anchor": true,
+      "model": "llama-3.2-3b-instruct-q4_k_m.gguf"
+    },
+    "offload": {
+      "latency_ms": {
+        "median": 152.41589411743917,
+        "iqr": [
+          148.78548382308938,
+          155.0915602942148
+        ],
+        "p95": 157.5576067653053,
+        "min": 138.24537058826536,
+        "max": 158.6841764698928,
+        "n": 50
+      },
+      "energy_mJ": {
+        "median": 6835.81585289158,
+        "iqr": [
+          6607.383992701892,
+          7046.416928457958
+        ],
+        "p95": 7247.347196432228,
+        "min": 6278.377849216606,
+        "max": 7429.937566802742,
+        "n": 50
+      },
+      "calls_per_burst": 17,
+      "reps": 50,
+      "warmup_discarded": 5,
+      "clocks_sm_mhz_median": 1950.0,
+      "temp_c_max": 88.0,
+      "vram_used_mib": 3919.0,
+      "vram_total_mib": 4096.0,
+      "near_vram_limit": true,
+      "valid_device_anchor": false,
+      "model": "qwen2.5-7b-instruct-q4_k_m.gguf"
+    }
+  },
+  "models": {
+    "think_tiny": "qwen2.5-0.5b-instruct-q8_0.gguf",
+    "think_big": "llama-3.2-3b-instruct-q4_k_m.gguf",
+    "offload": "qwen2.5-7b-instruct-q4_k_m.gguf"
+  },
+  "notes": "energy is measured above idle. NOTE ON `offload`: it is now a locally hosted 7B, so the figure below is what serving that model COSTS THE SERVER -- it is NOT the robot's cost for offloading, which stays modelled radio energy + network latency on R1's side (interfaces/ved.py unchanged). Reported because it is free to collect and gives the server side of the energy story, not because the env consumes it. The file name follows the handoff contract; `device_measured` is the real part.",
+  "min_burst_ms": 5917.15976331361
 }

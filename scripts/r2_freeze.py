@@ -42,7 +42,7 @@ import json
 import os
 import sys
 import time
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import numpy as np
 
@@ -58,13 +58,26 @@ KNOWN = (THINK_TINY, THINK_BIG, OFFLOAD, ASK)
 
 
 def build(analysis: Dict, asr_wer: float, ask_accuracy: float,
-          ask_gamma: float, extra_meta: Dict) -> Dict[str, np.ndarray]:
+          ask_gamma: float, extra_meta: Dict,
+          ablations: Optional[List[str]] = None) -> Dict[str, np.ndarray]:
+    """Flatten the analysis into the artefact.
+
+    `ablations` are configurations that were measured but are NOT environment
+    tiers -- the Q8_0 build of `think_big`, for example, which exists to show
+    that quantisation is not the limiting factor. They are dropped here and
+    named in the meta block. The unknown-tier check below stays a hard error
+    for everything else: silently admitting a name the env does not know is how
+    an artefact ends up driving training with a tier that has no cost model.
+    """
+    ablations = list(ablations or [])
     ks = sorted({int(k) for t in analysis["accuracy"]
                  for k in analysis["accuracy"][t] if k != "pooled"})
     tiers: List[str] = [t for t in analysis["tiers"] if t in KNOWN]
-    unknown = set(analysis["tiers"]) - set(KNOWN)
+    unknown = set(analysis["tiers"]) - set(KNOWN) - set(ablations)
     if unknown:
-        raise ValueError(f"analysis contains tiers the env does not know: {unknown}")
+        raise ValueError(
+            f"analysis contains tiers the env does not know: {unknown}. "
+            f"If these are ablations rather than tiers, pass --ablation-tiers.")
 
     acc, decay, by_k, n_s = [], [], [], []
     for t in tiers:
@@ -104,6 +117,10 @@ def build(analysis: Dict, asr_wer: float, ask_accuracy: float,
         "rho": {t: analysis["decay"][t]["rho"] for t in analysis["decay"]},
         "estimator": "ICC(1) one-way ANOVA over repeats; gamma by least squares "
                      "against (1-g^n)/(1-g); CIs are cluster bootstrap over cores",
+        "ablations_measured_not_tiers": {
+            t: {"accuracy": analysis["accuracy"][t]["pooled"]["acc"],
+                "gamma": analysis["decay"][t]["gamma"]}
+            for t in ablations if t in analysis.get("accuracy", {})},
     }
     meta.update(extra_meta)
 
@@ -153,6 +170,13 @@ def main() -> int:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--analysis", default=DEFAULT_ANALYSIS)
     ap.add_argument("--out", default=DEFAULT_OUT)
+    ap.add_argument("--asr-recovery", type=float, default=None,
+                    help="referent recovery at the operating point. This is what "
+                         "the env should degrade the `ask` channel by -- it "
+                         "consumes 'did ask deliver the right referent', not a "
+                         "word error rate, and the two diverge sharply in noise "
+                         "(0 dB: WER 0.426 vs recovery 0.917). Read from "
+                         "data/r2_asr_curve.json when not given.")
     ap.add_argument("--asr-wer", type=float, default=None,
                     help="measured WER at the chosen operating point (r2_asr.py). "
                          "Omitted -> R1's placeholder, flagged in meta.")
@@ -162,6 +186,9 @@ def main() -> int:
                     help="gamma for the `ask` channel; should be the lowest tier")
     ap.add_argument("--profile", default=os.path.join("data", "r2_rtx3060_profile.json"),
                     help="hardware profile to reference in meta, if present")
+    ap.add_argument("--ablation-tiers", nargs="*", default=["think_big_q8"],
+                    help="measured configurations that are NOT env tiers. Dropped "
+                         "from the arrays, recorded in meta.")
     ap.add_argument("--verify-only", action="store_true")
     args = ap.parse_args()
 
@@ -198,11 +225,28 @@ def main() -> int:
     else:
         extra["hardware_profile"] = None
 
+    # Emit `asr_recovery` alongside `asr_wer`. R1's loader treats it as
+    # optional and takes precedence over the WER form, so shipping it removes
+    # their bridge script; older loaders ignore the extra key.
+    rec = args.asr_recovery
+    if rec is None:
+        curve = os.path.join("data", "r2_asr_curve.json")
+        if os.path.exists(curve):
+            with open(curve, encoding="utf-8") as f:
+                c = json.load(f)
+            rec = float(c["curve"][str(c["operating_snr"])]["recovery"])
+            extra["asr_recovery_provenance"] = (
+                f"measured, {c['operating_snr']} dB operating point")
+    if rec is not None:
+        extra["asr_recovery"] = rec
+
     arrays = build(analysis, wer, args.ask_accuracy,
                    args.ask_gamma if args.ask_gamma is not None
-                   else EVIDENCE_DECAY[ASK], extra)
+                   else EVIDENCE_DECAY[ASK], extra, args.ablation_tiers)
 
     os.makedirs(os.path.dirname(args.out) or ".", exist_ok=True)
+    if rec is not None:
+        arrays["asr_recovery"] = np.float64(rec)
     np.savez(args.out, **arrays)
     print(f"wrote artefact -> {args.out}\n")
     return verify(args.out)

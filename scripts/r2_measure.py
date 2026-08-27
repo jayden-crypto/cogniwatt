@@ -45,7 +45,8 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from cogniwatt.dialogue.backends import Query, make_backend
 from cogniwatt.dialogue.prompts import (build_prompt, parse_choice,
-                                        shuffled_view, stable_seed)
+                                        parse_reasoning, shuffled_view,
+                                        stable_seed)
 from cogniwatt.dialogue.schema import load_scenarios
 
 DEFAULT_SCENARIOS = os.path.join("data", "r2_scenarios.jsonl")
@@ -53,7 +54,8 @@ DEFAULT_OUT = os.path.join("data", "r2_raw_responses.parquet")
 TIERS = ("think_tiny", "think_big", "offload")
 
 
-def build_queries(scenarios, repeats: int, tier: str) -> List[Dict]:
+def build_queries(scenarios, repeats: int, tier: str,
+                  mode: str = "direct") -> List[Dict]:
     """One row per (scenario, repeat). The permutation is tier-independent."""
     rows: List[Dict] = []
     for s in scenarios:
@@ -76,7 +78,8 @@ def build_queries(scenarios, repeats: int, tier: str) -> List[Dict]:
                 "true_idx": s.true_idx,
                 "true_color": s.candidates[s.true_idx].color,
                 "shown_colors": json.dumps([s.candidates[p].color for p in perm]),
-                "prompt": build_prompt(s.instruction, shown),
+                "prompt": build_prompt(s.instruction, shown, mode=mode),
+                "prompt_mode": mode,
             })
     return rows
 
@@ -86,6 +89,8 @@ def run_tier(tier: str, rows: List[Dict], args) -> List[Dict]:
                       temperature=args.temperature, n_gpu_layers=args.n_gpu_layers,
                       seed=args.seed, live_cloud=args.live_cloud,
                       cloud_api=args.cloud_api)
+    if hasattr(be, "max_tokens"):
+        be.max_tokens = args.max_tokens or (320 if args.prompt_mode == "reasoning" else 64)
     meta = be.meta()
     print(f"  backend {meta}")
     qs = [Query(r["qid"], r["prompt"], r["k"], r["scenario_id"],
@@ -111,7 +116,10 @@ def run_tier(tier: str, rows: List[Dict], args) -> List[Dict]:
     out: List[Dict] = []
     for r, resp in zip(rows, responses):
         assert r["qid"] == resp.qid, "response/row misalignment"
-        display_idx, status = parse_choice(resp.text, r["k"])
+        # A reasoning response names options while thinking, so its answer must
+        # be read from the last line rather than the first match anywhere.
+        parser = parse_reasoning if r.get("prompt_mode") == "reasoning" else parse_choice
+        display_idx, status = parser(resp.text, r["k"])
         perm = json.loads(r["perm"])
         # Map the model's *display* index back to a dataset index. Skipping
         # this step is the single easiest way to silently score a shuffled
@@ -167,6 +175,12 @@ def main() -> int:
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--mock", action="store_true",
                     help="synthetic tiers with known accuracy and known rho")
+    ap.add_argument("--prompt-mode", default="direct", choices=("direct", "reasoning"),
+                    help="`direct` asks for a bare letter (~5 output tokens). "
+                         "`reasoning` permits thinking first and reads the answer "
+                         "off the last line; use --max-tokens to give it room.")
+    ap.add_argument("--max-tokens", type=int, default=None,
+                    help="output cap. Defaults to 64 direct / 320 reasoning.")
     ap.add_argument("--cloud-api", action="store_true",
                     help="route `offload` to the Anthropic backends instead of "
                          "the local large GGUF. Requires ANTHROPIC_API_KEY and "
@@ -187,7 +201,7 @@ def main() -> int:
     frames: List[pd.DataFrame] = []
     for tier in args.tiers:
         print(f"\n[{tier}]")
-        rows = build_queries(scenarios, args.repeats, tier)
+        rows = build_queries(scenarios, args.repeats, tier, args.prompt_mode)
         frames.append(pd.DataFrame(run_tier(tier, rows, args)))
 
     df = pd.concat(frames, ignore_index=True)

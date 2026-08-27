@@ -5,24 +5,24 @@
   "by_tier": {
     "ask": {
       "2": {
-        "one_query_posterior": 0.8837404024999999,
-        "ceiling": 0.9038076953851724,
+        "one_query_posterior": 0.9272729166666668,
+        "ceiling": 0.9422991255068008,
         "reaches_threshold": true,
-        "share_of_trials_above": 0.93875,
+        "share_of_trials_above": 0.9625,
         "effective_draws": 1.1764705882352942
       },
       "3": {
-        "one_query_posterior": 0.8845384513749998,
-        "ceiling": 0.9088879166404517,
+        "one_query_posterior": 0.9277374479166669,
+        "ceiling": 0.9451836094779215,
         "reaches_threshold": true,
-        "share_of_trials_above": 0.94175,
+        "share_of_trials_above": 0.96375,
         "effective_draws": 1.1764705882352942
       },
       "4": {
-        "one_query_posterior": 0.8841589493333332,
-        "ceiling": 0.9104960631175458,
+        "one_query_posterior": 0.9265581388888892,
+        "ceiling": 0.9451942387142275,
         "reaches_threshold": true,
-        "share_of_trials_above": 0.942,
+        "share_of_trials_above": 0.96275,
         "effective_draws": 1.1764705882352942
       }
     },

@@ -37,12 +37,20 @@ def load_agent(tag: str, name=None):
 #: missed here first time round -- every arm evaluated at the 0.75 default,
 #: which made the scripted baselines return byte-identical numbers at every
 #: link quality. That tell is what caught it.
-ENV_ARGS = {"net_quality": 0.75, "patience": 3}
+ENV_ARGS = {"net_quality": 0.75, "patience": 3, "dialogue": None}
 
 
 def env_kwargs_from(tag: str, args: dict) -> dict:
+    # `dialogue` is the third training-time setting found not to reach
+    # evaluation, after `lambda_cloud` and `net_quality`. Omitting it evaluates a
+    # policy trained on R2's measured channel constants inside an environment
+    # still running the R1 placeholders -- the tiers have different accuracies,
+    # different evidence decay and different confusion matrices, so the measured
+    # numbers describe a world the policy was never trained for. Silent, and it
+    # invalidated a full round of conclusions before it was caught.
     return {"net_quality_mean": float(args.get("net_quality", ENV_ARGS["net_quality"])),
-            "patience_max": int(args.get("patience", ENV_ARGS["patience"]))}
+            "patience_max": int(args.get("patience", ENV_ARGS["patience"])),
+            "dialogue": args.get("dialogue") or None}
 
 
 def check_env_args(tags, cks) -> dict:
@@ -113,14 +121,21 @@ def main():
         for t in a.tags:
             check_reward_config(t, cks[t]["reward"], rc)
     env_kw = check_env_args(a.tags, cks)
+    # `dialogue` names the artefact; turn it into the oracle the env takes.
+    dialogue_path = env_kw.pop("dialogue", None)
+    if dialogue_path:
+        from cogniwatt.interfaces.dialogue import load_precomputed
+        env_kw["oracle"] = load_precomputed(dialogue_path, strict=True)
+        print(f"[env] dialogue artefact: {dialogue_path}")
     trained_kw = dict(env_kw)
     if a.eval_net_quality is not None:
         env_kw["net_quality_mean"] = float(a.eval_net_quality)
     if a.eval_patience is not None:
         env_kw["patience_max"] = int(a.eval_patience)
     if env_kw != trained_kw:
-        print(f"[transfer] trained in {trained_kw}\n"
-              f"[transfer] evaluating in {env_kw}  <- zero-shot condition shift")
+        show = lambda d: {k: v for k, v in d.items() if k != "oracle"}
+        print(f"[transfer] trained in {show(trained_kw)}\n"
+              f"[transfer] evaluating in {show(env_kw)}  <- zero-shot condition shift")
     elif env_kw != {"net_quality_mean": ENV_ARGS["net_quality"],
                     "patience_max": ENV_ARGS["patience"]}:
         print(f"[env] evaluating under {env_kw}")

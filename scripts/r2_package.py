@@ -41,6 +41,7 @@ REQUIRED = [
     "data/r2_raw_responses.csv.gz",
     "data/r2_raw_offload.csv.gz",
     "data/r2_raw_q8.csv.gz",
+    "data/r2_raw_reasoning.csv.gz",
     "data/r2_raw_all.csv.gz",
     "data/r2_ceilings.json",
     "data/r2_raw_responses_meta.json",
@@ -57,6 +58,7 @@ REQUIRED = [
     "tests/test_r2_estimators.py",
 ]
 GLOBS = ["scripts/r2_*.py", "cogniwatt/dialogue/*.py", "docs/r2_*.md",
+         "docs/r2_*.html",
          "docs/R1_*.md", "results/figures/r2_*.png"]
 
 

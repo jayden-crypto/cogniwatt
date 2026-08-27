@@ -37,15 +37,46 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from cogniwatt.env.belief import BeliefState
 from cogniwatt.interfaces.dialogue import load_precomputed
+from cogniwatt.interfaces.ved import ASK
 
 #: An irreversible place() at +10/-10 is a bad bet below this posterior.
 THRESHOLD = 0.85
 
+DEFAULT_CURVE = os.path.join("data", "r2_asr_curve.json")
+
+
+def ask_accuracy(oracle, curve_path: str = DEFAULT_CURVE):
+    """Human-channel accuracy degraded by REFERENT RECOVERY, not word error rate.
+
+    The env does not consume a transcript -- it consumes whether the `ask`
+    action delivered the right referent, and the two come apart badly under
+    noise (at 0 dB: WER 0.426 but recovery 0.917). R1_REPLY_2.md sec 3.2 argued
+    for recovery and R1 adopted it; this script was still using (1 - wer), which
+    is why its `ask` ceiling read 0.909 against R1's 0.947. That was an
+    inconsistency inside R2's own work, not a disagreement between sides.
+
+    `interfaces/dialogue.py` is R1-owned and this script must not change its
+    behaviour, so the substitution is applied here instead.
+    """
+    if not os.path.exists(curve_path):
+        return None
+    with open(curve_path, encoding="utf-8") as f:
+        c = json.load(f)
+    rec = c["curve"][str(c["operating_snr"])]["recovery"]
+    return float(oracle.tier_accuracy[ASK]) * float(rec)
+
 
 def ceiling(oracle, tier: str, k: int, n_queries: int = 40,
-            trials: int = 4000, seed: int = 0) -> Dict[str, float]:
+            trials: int = 4000, seed: int = 0,
+            acc_override=None) -> Dict[str, float]:
     rng = np.random.default_rng(seed)
-    L = oracle.likelihood(tier, k)
+    if acc_override is None:
+        L = oracle.likelihood(tier, k)
+    else:
+        # Same channel construction the oracle uses, accuracy replaced.
+        off = np.full((k, k), 1.0 / (k - 1)); np.fill_diagonal(off, 0.0)
+        L = (1.0 - acc_override) * off
+        np.fill_diagonal(L, acc_override)
     gamma = oracle.evidence_decay[tier]
 
     post_true = np.zeros(trials)
@@ -78,20 +109,27 @@ def main() -> int:
     ap.add_argument("--ks", nargs="+", type=int, default=[2, 3, 4])
     ap.add_argument("--queries", type=int, default=40)
     ap.add_argument("--trials", type=int, default=4000)
+    ap.add_argument("--curve", default=DEFAULT_CURVE)
     ap.add_argument("--out", default=os.path.join("data", "r2_ceilings.json"))
     args = ap.parse_args()
 
     o = load_precomputed(args.artefact, strict=True)
-    print(f"threshold for an irreversible place(): {THRESHOLD}\n")
+    ask_acc = ask_accuracy(o, args.curve)
+    print(f"threshold for an irreversible place(): {THRESHOLD}")
+    if ask_acc is not None:
+        print(f"`ask` degraded by referent recovery: {ask_acc:.4f} "
+              f"(the WER form would give {o.accuracy(ASK, 3):.4f})")
+    print()
     print(f"{'tier':<12}{'k':>2}{'acc':>8}{'gamma':>8}{'eff draws':>11}"
           f"{'1-query':>9}{'ceiling':>9}   reaches?")
     out: Dict[str, Dict[str, Dict]] = {}
     for tier in args.tiers:
         out[tier] = {}
         for k in args.ks:
-            r = ceiling(o, tier, k, args.queries, args.trials)
+            ov = ask_acc if tier == ASK else None
+            r = ceiling(o, tier, k, args.queries, args.trials, acc_override=ov)
             out[tier][str(k)] = r
-            acc = o.accuracy(tier, k)
+            acc = ov if ov is not None else o.accuracy(tier, k)
             print(f"{tier:<12}{k:>2}{acc:>8.3f}{o.evidence_decay[tier]:>8.3f}"
                   f"{r['effective_draws']:>11.2f}{r['one_query_posterior']:>9.3f}"
                   f"{r['ceiling']:>9.3f}   "

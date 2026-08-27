@@ -1,0 +1,16 @@
+{
+  "scenarios": "data/r2_scenarios.jsonl",
+  "n_scenarios": 660,
+  "repeats": 1,
+  "tiers": [
+    "think_big",
+    "offload"
+  ],
+  "temperature": 0.7,
+  "mock": false,
+  "live_cloud": false,
+  "seed": 0,
+  "n_gpu_layers": -1,
+  "date": "2026-08-27 17:55:14",
+  "rows": 1320
+}

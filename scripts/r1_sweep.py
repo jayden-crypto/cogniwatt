@@ -136,6 +136,13 @@ ARMS = {
     # patience is the other lever: a human who answers once is a different
     # problem from one who answers three times.
     "m_pat1":  (MEAS + ["--patience", "1"], list(range(3))),
+    # The decisive test for the RL contribution under measured constants. In the
+    # nominal condition the problem is degenerate (ask once) and greedy_value
+    # wins, because one-step lookahead with the true likelihoods is optimal when
+    # the optimum is one action deep. Offline and alone, no single action
+    # suffices and the agent must sequence cheap evidence under a budget --
+    # which is where a learned policy should earn its place.
+    "m_alone": (MEAS + ["--net-quality", "0.1", "--patience", "0"], list(range(4))),
     "ask0.5":          (["--no-recurrent", "--n-envs", "16", "--lambda-ask", "0.5"], [0]),
     "ask3.5":          (["--no-recurrent", "--n-envs", "16", "--lambda-ask", "3.5"], [0]),
     "ask6":            (["--no-recurrent", "--n-envs", "16", "--lambda-ask", "6.0"], [0]),

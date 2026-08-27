@@ -116,9 +116,40 @@ class GreedyValueAgent(Agent):
     name = "greedy_value"
 
     def __init__(self, threshold: float = 0.85, reserve: float = 1.2,
-                 lambda_ask: Optional[float] = None):
+                 lambda_ask: Optional[float] = None,
+                 belief_oracle=None, name: Optional[str] = None):
         self.threshold, self.reserve = float(threshold), float(reserve)
         self.lambda_ask = lambda_ask
+        # What this agent *believes* about the channels, as distinct from what
+        # the environment actually does. Default None = it reads the env's true
+        # oracle, i.e. it is handed the measured per-tier accuracies, evidence
+        # decay and confusion matrices for free. That makes the default a
+        # Bayes-optimal myopic planner with a perfect model, not an engineered
+        # heuristic -- those constants cost R2 27,600 model queries to obtain.
+        # Passing a different oracle here models the realistic case: an engineer
+        # hand-tunes the rule from assumed numbers and deploys it into a world
+        # that does not match. This is the comparison that isolates what RL
+        # actually buys, since the learned policy is given no constants at all
+        # and must infer the channel behaviour from reward.
+        self.belief_oracle = belief_oracle
+        self._lik_cache: dict = {}
+        if name:
+            self.name = name
+
+    def reset(self) -> None:
+        self._lik_cache = {}
+
+    def _oracle(self, env):
+        return self.belief_oracle if self.belief_oracle is not None else env.oracle
+
+    def _likelihood(self, env, tier: str):
+        if self.belief_oracle is None:
+            return env._likelihoods[tier]
+        key = (tier, env.task.k)
+        if key not in self._lik_cache:
+            self._lik_cache[key] = self.belief_oracle.likelihood(
+                tier, env.task.k, env.task.similarity)
+        return self._lik_cache[key]
 
     def _value_per_joule(self, env, tier: str) -> float:
         c = env.ved.quote(tier)
@@ -127,12 +158,13 @@ class GreedyValueAgent(Agent):
         if tier == ASK and env.patience <= 0:
             return -np.inf
         n = env.query_counts[tier]
-        w = env.oracle.evidence_weight(tier, n)
-        a = env.oracle.accuracy(tier)
+        o = self._oracle(env)
+        w = o.evidence_weight(tier, n)
+        a = o.accuracy(tier)
         k = env.task.k
         # Expected posterior on the current argmax after one weighted draw.
         p = env.belief.probs.copy()
-        lik = env._likelihoods[tier]
+        lik = self._likelihood(env, tier)
         gain = 0.0
         for obs_idx in range(k):
             p_obs = float(np.dot(p, lik[:, obs_idx]))

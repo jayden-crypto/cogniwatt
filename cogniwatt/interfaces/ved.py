@@ -101,16 +101,37 @@ def apply_measured_profile(path: str) -> bool:
     dev = d["device"]
     if dev not in _STUB_COST_TABLE:
         raise KeyError(f"measured profile names unknown device {dev!r}")
+    applied = False
     for op, m in d.get("ops", {}).items():
-        lat = m.get("latency_ms_median")
-        en = m.get("energy_mJ_median")
+        # R2 shipped a richer schema than docs/R2_HANDOFF.md section 7b specified:
+        # `latency_ms: {median, iqr, p95, min, max, n}` rather than a flat
+        # `latency_ms_median`. Accept both -- the nested form carries the spread,
+        # which is what the report needs.
+        lat = _median_of(m.get("latency_ms", m.get("latency_ms_median")))
+        en = _median_of(m.get("energy_mJ", m.get("energy_mJ_median")))
         if lat is None:
             continue
-        old = _STUB_COST_TABLE[dev][op]
+        # R2 flags an op whose model did not truly fit in VRAM. On Windows the
+        # driver oversubscribes into shared system memory rather than failing,
+        # so such a measurement characterises "GPU plus host memory traffic",
+        # not the device. Refusing it is the whole point of the flag.
+        if m.get("valid_device_anchor") is False:
+            continue
+        prev = _STUB_COST_TABLE[dev][op]
         _STUB_COST_TABLE[dev][op] = (float(lat),
-                                     float(en) if en is not None else old[1],
-                                     old[2])
-    return True
+                                     float(en) if en is not None else prev[1],
+                                     prev[2])
+        applied = True
+    return applied
+
+
+def _median_of(v):
+    """Accept either a bare number or R2's {median, iqr, ...} block."""
+    if v is None:
+        return None
+    if isinstance(v, dict):
+        return v.get("median")
+    return v
 
 
 @dataclass
