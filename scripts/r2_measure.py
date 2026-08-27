@@ -84,7 +84,8 @@ def build_queries(scenarios, repeats: int, tier: str) -> List[Dict]:
 def run_tier(tier: str, rows: List[Dict], args) -> List[Dict]:
     be = make_backend(tier, mock=args.mock, models_dir=args.models_dir,
                       temperature=args.temperature, n_gpu_layers=args.n_gpu_layers,
-                      seed=args.seed, live_cloud=args.live_cloud)
+                      seed=args.seed, live_cloud=args.live_cloud,
+                      cloud_api=args.cloud_api)
     meta = be.meta()
     print(f"  backend {meta}")
     qs = [Query(r["qid"], r["prompt"], r["k"], r["scenario_id"],
@@ -92,7 +93,7 @@ def run_tier(tier: str, rows: List[Dict], args) -> List[Dict]:
 
     t0 = time.perf_counter()
     try:
-        if tier == "offload" and not args.mock and not args.live_cloud:
+        if tier == "offload" and args.cloud_api and not args.mock and not args.live_cloud:
             # One batch submission for the whole tier -- half price, and the
             # only sane way to move ~7k requests.
             responses = be.answer_batch(qs)
@@ -166,6 +167,10 @@ def main() -> int:
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--mock", action="store_true",
                     help="synthetic tiers with known accuracy and known rho")
+    ap.add_argument("--cloud-api", action="store_true",
+                    help="route `offload` to the Anthropic backends instead of "
+                         "the local large GGUF. Requires ANTHROPIC_API_KEY and "
+                         "an approved budget; off by default.")
     ap.add_argument("--live-cloud", action="store_true",
                     help="offload via synchronous calls (full price) so latency is real")
     args = ap.parse_args()

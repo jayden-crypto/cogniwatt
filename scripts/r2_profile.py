@@ -222,6 +222,14 @@ def on_mains() -> Optional[bool]:
     return None
 
 
+def vram_used_mib() -> Optional[float]:
+    try:
+        out = _smi("--query-gpu=memory.used", "--format=csv,noheader,nounits")
+        return float(out.strip().splitlines()[0])
+    except Exception:
+        return None
+
+
 def profile_local_tier(tier: str, prompts: List[str], p_idle: float, args
                        ) -> Dict[str, object]:
     from cogniwatt.dialogue.backends import Query, make_backend
@@ -235,6 +243,22 @@ def profile_local_tier(tier: str, prompts: List[str], p_idle: float, args
     be = make_backend(tier, models_dir=args.models_dir, temperature=args.temperature,
                       n_gpu_layers=args.n_gpu_layers, seed=args.seed)
     print(f"  {be.meta()}")
+
+    # `n_gpu_layers == -1` is a *request*, not a guarantee. On Windows the WDDM
+    # driver will silently oversubscribe into shared system memory rather than
+    # fail, so llama.cpp can report "29/29 layers offloaded" while part of the
+    # model actually lives in host RAM. That was happening for the 7B: a
+    # 4168 MiB model buffer against 4096 MiB of card. Energy measured in that
+    # state includes host-memory traffic, so it is not a clean device figure --
+    # and the old check, which looked only at the requested layer count, called
+    # it a valid anchor.
+    used = vram_used_mib()
+    total = float(gpu_info()["vram_mib"])
+    near_limit = used is not None and used >= 0.93 * total
+    if near_limit:
+        print(f"  WARNING: {used:.0f} of {total:.0f} MiB VRAM in use -- at the "
+              f"card's limit, so the model is probably spilling into shared "
+              f"system memory. Not a clean device anchor.")
     qs = [Query(f"prof|{tier}|{i}", p, 3, f"prof{i}", 0, 0)
           for i, p in enumerate(prompts)]
 
@@ -287,7 +311,12 @@ def profile_local_tier(tier: str, prompts: List[str], p_idle: float, args
         "clocks_sm_mhz_median": float(np.median([s[2] for s in win_all]))
                                 if win_all else None,
         "temp_c_max": float(np.max([s[3] for s in win_all])) if win_all else None,
-        "valid_device_anchor": args.n_gpu_layers == -1,
+        "vram_used_mib": used,
+        "vram_total_mib": total,
+        "near_vram_limit": bool(near_limit),
+        # Both conditions: every layer requested on the GPU, AND the card not
+        # at its limit (which would mean part of it is not really there).
+        "valid_device_anchor": bool(args.n_gpu_layers == -1 and not near_limit),
         "model": be.meta().get("model_id"),
     }
 
@@ -353,6 +382,10 @@ def main() -> int:
     ap.add_argument("--ambient-c", type=float, default=None,
                     help="ambient temperature; recorded, not measured")
     ap.add_argument("--fan-curve", default="default")
+    ap.add_argument("--cloud-api", action="store_true",
+                    help="profile `offload` as a remote API (latency only). Off "
+                         "by default: the offload tier is now a locally hosted "
+                         "large model, so it profiles like any other local tier.")
     ap.add_argument("--idle-only", action="store_true")
     args = ap.parse_args()
 
@@ -381,9 +414,15 @@ def main() -> int:
         "date": time.strftime("%Y-%m-%d %H:%M:%S"),
         "ops": {},
         "models": {},
-        "notes": ("energy is measured above idle; offload energy is radio-side "
-                  "and modelled by R1, not measured here. The file name follows "
-                  "the handoff contract; `device_measured` is the real part."),
+        "notes": ("energy is measured above idle. NOTE ON `offload`: it is now "
+                  "a locally hosted 7B, so the figure below is what serving that "
+                  "model COSTS THE SERVER -- it is NOT the robot's cost for "
+                  "offloading, which stays modelled radio energy + network "
+                  "latency on R1's side (interfaces/ved.py unchanged). Reported "
+                  "because it is free to collect and gives the server side of "
+                  "the energy story, not because the env consumes it. The file "
+                  "name follows the handoff contract; `device_measured` is the "
+                  "real part."),
     }
 
     if args.idle_only:
@@ -409,7 +448,7 @@ def main() -> int:
     prompts = sample_prompts(args.scenarios, 32)
     for tier in args.tiers:
         print(f"\n[{tier}]")
-        if tier == "offload":
+        if tier == "offload" and args.cloud_api:
             prof["ops"][tier] = profile_offload(prompts, args)  # type: ignore[index]
         else:
             prof["ops"][tier] = profile_local_tier(  # type: ignore[index]

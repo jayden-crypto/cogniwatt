@@ -19,6 +19,10 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 ANNEAL = ["--no-recurrent", "--n-envs", "16", "--ent-coef", "0.12",
           "--ent-coef-final", "0.01"]
 
+#: Canonical config + R2's fully-measured artefact. The base for every
+#: experiment run after the three-tier measurement landed.
+MEAS = ANNEAL + ["--dialogue", "data/dialogue_measured_recovery.npz"]
+
 #: arm -> (extra train.py flags, seeds).  Everything else is train.py defaults.
 ARMS = {
     # the configuration the reported results were produced with
@@ -110,6 +114,28 @@ ARMS = {
     # against placeholder offload/ask accuracy.
     "r2final": (ANNEAL + ["--dialogue", "data/dialogue_measured_recovery.npz"],
                 list(range(4))),
+    # All three model tiers measured (offload = Qwen2.5-7B Q4_K_M hosted
+    # locally), ask still an R1 placeholder scaled by measured referent
+    # recovery. This is the artefact the report's headline should be built on.
+    "r2full": (ANNEAL + ["--dialogue", "data/dialogue_measured_recovery.npz"],
+               list(range(6))),
+
+    # --- where does the problem stop being degenerate? ----------------------
+    # With all three model tiers measured, none reaches the confidence an
+    # irreversible place() needs, so the optimum collapses to "ask once" and the
+    # learned policy becomes indistinguishable from the always_ask baseline
+    # (0.887 vs 0.886). That is an honest finding but it leaves nothing for RL
+    # to allocate. lambda_ask is an R1 modelling choice, not a measurement, and
+    # the project already treats it as a Pareto knob -- so sweep it under
+    # MEASURED constants and find the price at which cognition has to be
+    # budgeted again.
+    "m_ask2":  (MEAS + ["--lambda-ask", "2.0"],  list(range(3))),
+    "m_ask4":  (MEAS + ["--lambda-ask", "4.0"],  list(range(3))),
+    "m_ask6":  (MEAS + ["--lambda-ask", "6.0"],  list(range(3))),
+    "m_ask10": (MEAS + ["--lambda-ask", "10.0"], list(range(3))),
+    # patience is the other lever: a human who answers once is a different
+    # problem from one who answers three times.
+    "m_pat1":  (MEAS + ["--patience", "1"], list(range(3))),
     "ask0.5":          (["--no-recurrent", "--n-envs", "16", "--lambda-ask", "0.5"], [0]),
     "ask3.5":          (["--no-recurrent", "--n-envs", "16", "--lambda-ask", "3.5"], [0]),
     "ask6":            (["--no-recurrent", "--n-envs", "16", "--lambda-ask", "6.0"], [0]),

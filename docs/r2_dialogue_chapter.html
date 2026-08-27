@@ -1,0 +1,684 @@
+<title>The Saturation Ceiling</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap">
+
+<style>
+:root{
+  --paper:#F7F8FA; --panel:#FFFFFF; --ink:#16202B; --muted:#5E6B78;
+  --rule:#D3D9E0; --rule-soft:#E6EAEF;
+  --trace:#0F6E7E; --trace-soft:#DCEDEF;
+  --warn:#B26B2E; --warn-soft:#F3E7DA;
+  --shadow:0 1px 2px rgba(22,32,43,.06),0 8px 24px rgba(22,32,43,.05);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#10161D; --panel:#161E27; --ink:#E4E9EE; --muted:#93A1AE;
+    --rule:#2C3843; --rule-soft:#222C36;
+    --trace:#4FB3C2; --trace-soft:#123038;
+    --warn:#D89A5B; --warn-soft:#33261A;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#10161D; --panel:#161E27; --ink:#E4E9EE; --muted:#93A1AE;
+  --rule:#2C3843; --rule-soft:#222C36;
+  --trace:#4FB3C2; --trace-soft:#123038;
+  --warn:#D89A5B; --warn-soft:#33261A;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.3);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16.5px; line-height:1.62;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1080px; margin:0 auto; padding:0 28px 96px}
+
+/* ---------- masthead ---------- */
+header.mast{padding:72px 0 0}
+.kicker{
+  font-family:"IBM Plex Mono",monospace; font-size:11.5px; font-weight:500;
+  letter-spacing:.14em; text-transform:uppercase; color:var(--trace);
+}
+h1{
+  font-family:Newsreader,Georgia,serif; font-weight:500;
+  font-size:clamp(2.6rem,6vw,4.1rem); line-height:1.02; letter-spacing:-.018em;
+  margin:.28em 0 0; text-wrap:balance; max-width:16ch;
+}
+.standfirst{
+  font-family:Newsreader,Georgia,serif; font-size:clamp(1.12rem,2.1vw,1.34rem);
+  line-height:1.5; color:var(--muted); max-width:56ch; margin:22px 0 0;
+}
+.byline{
+  display:flex; flex-wrap:wrap; gap:10px 26px; margin:32px 0 0;
+  padding:16px 0 0; border-top:1px solid var(--rule);
+  font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--muted);
+}
+.byline b{color:var(--ink); font-weight:500}
+
+/* ---------- readout: the summary instrument panel ---------- */
+.readout{
+  margin:38px 0 0; border:1px solid var(--rule); border-radius:3px;
+  background:var(--panel); box-shadow:var(--shadow);
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(178px,1fr));
+}
+.cell{padding:20px 22px; border-right:1px solid var(--rule-soft)}
+.cell:last-child{border-right:0}
+.cell .lab{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.11em;
+  text-transform:uppercase; color:var(--muted);
+}
+.cell .val{
+  font-family:"IBM Plex Mono",monospace; font-size:1.72rem; font-weight:500;
+  letter-spacing:-.02em; margin-top:7px; font-variant-numeric:tabular-nums;
+}
+.cell .note{font-size:12.5px; color:var(--muted); margin-top:3px; line-height:1.4}
+
+/* ---------- sections ---------- */
+section{
+  display:grid; grid-template-columns:52px minmax(0,1fr);
+  gap:0 22px; padding:52px 0 0;
+}
+.num{
+  font-family:"IBM Plex Mono",monospace; font-size:12px; font-weight:500;
+  color:var(--trace); padding-top:.55em; letter-spacing:.04em;
+}
+.body{min-width:0}
+h2{
+  font-family:Newsreader,Georgia,serif; font-weight:500; font-size:1.86rem;
+  line-height:1.16; letter-spacing:-.012em; margin:0 0 14px; text-wrap:balance;
+}
+h3{
+  font-family:"IBM Plex Sans",sans-serif; font-weight:600; font-size:.94rem;
+  letter-spacing:.005em; margin:30px 0 8px;
+}
+p{margin:0 0 15px; max-width:66ch}
+.body>p:last-child{margin-bottom:0}
+strong{font-weight:600}
+em{font-style:italic}
+code{
+  font-family:"IBM Plex Mono",monospace; font-size:.88em;
+  background:var(--rule-soft); padding:.1em .34em; border-radius:2px;
+}
+a{color:var(--trace)}
+
+/* ---------- pull statement ---------- */
+.claim{
+  margin:26px 0; padding:20px 24px; border-left:3px solid var(--trace);
+  background:var(--trace-soft); border-radius:0 3px 3px 0;
+}
+.claim p{
+  font-family:Newsreader,Georgia,serif; font-size:1.16rem; line-height:1.48;
+  margin:0; max-width:60ch;
+}
+
+/* ---------- tables ---------- */
+.tw{overflow-x:auto; margin:22px 0; border:1px solid var(--rule); border-radius:3px; background:var(--panel)}
+table{border-collapse:collapse; width:100%; font-size:13.5px}
+caption{
+  caption-side:top; text-align:left; padding:14px 18px 12px;
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.11em;
+  text-transform:uppercase; color:var(--muted); border-bottom:1px solid var(--rule-soft);
+}
+th,td{padding:9px 14px; text-align:right; border-bottom:1px solid var(--rule-soft); white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+thead th{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; font-weight:500;
+  letter-spacing:.07em; text-transform:uppercase; color:var(--muted);
+}
+tbody td{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums}
+tbody td:first-child{font-family:"IBM Plex Sans",sans-serif}
+tbody tr:last-child td{border-bottom:0}
+tr.chance td{color:var(--muted); font-style:italic}
+tr.hi td{background:var(--trace-soft)}
+td.up{color:var(--trace); font-weight:500}
+td.dn{color:var(--warn); font-weight:500}
+
+/* ---------- threshold chart ---------- */
+.chart{
+  margin:24px 0; padding:22px 24px 16px; border:1px solid var(--rule);
+  border-radius:3px; background:var(--panel);
+}
+.chart .lab{
+  font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.11em;
+  text-transform:uppercase; color:var(--muted); margin-bottom:18px;
+}
+.row{display:grid; grid-template-columns:118px minmax(0,1fr) 58px; align-items:center; gap:14px; margin-bottom:11px}
+.row .who{font-size:13px}
+.row .who span{display:block; font-family:"IBM Plex Mono",monospace; font-size:10.5px; color:var(--muted)}
+.track{position:relative; height:22px; background:var(--rule-soft); border-radius:2px; overflow:hidden}
+.fill{height:100%; background:var(--warn); opacity:.55}
+.fill.ok{background:var(--trace); opacity:.8}
+.row .v{font-family:"IBM Plex Mono",monospace; font-size:13px; text-align:right; font-variant-numeric:tabular-nums}
+/* Track column spans from 132px (label 118 + gap 14) to 72px from the right
+   (value 58 + gap 14). The 0.85 marker sits at 85% across that span, computed
+   rather than hard-coded so it stays aligned if a row is added. */
+.bars{position:relative}
+.bars .mark{
+  position:absolute; top:0; bottom:0;
+  left:calc(132px + (100% - 204px) * .85);
+  width:0; border-left:2px dashed var(--ink); opacity:.42; pointer-events:none;
+}
+.thresh{position:relative; height:16px}
+.thresh b{
+  position:absolute; left:calc(132px + (100% - 204px) * .85);
+  top:0; transform:translateX(-50%); font-family:"IBM Plex Mono",monospace;
+  font-size:10.5px; color:var(--muted); font-weight:500; white-space:nowrap;
+}
+
+/* ---------- transcript ---------- */
+.script{
+  margin:20px 0; padding:16px 18px; border:1px solid var(--rule); border-radius:3px;
+  background:var(--panel); font-family:"IBM Plex Mono",monospace; font-size:12.5px;
+  line-height:1.72; overflow-x:auto;
+}
+.script .q{color:var(--trace); font-weight:500}
+.script .t{color:var(--trace)}
+.script .x{color:var(--warn)}
+.script .c{color:var(--muted)}
+
+/* ---------- caveat list ---------- */
+ul.caveats{list-style:none; padding:0; margin:18px 0 0}
+ul.caveats li{
+  padding:14px 0 14px 0; border-top:1px solid var(--rule-soft); max-width:66ch;
+}
+ul.caveats li:first-child{border-top:0; padding-top:0}
+ul.caveats b{
+  display:block; font-family:"IBM Plex Mono",monospace; font-size:10.5px;
+  letter-spacing:.1em; text-transform:uppercase; color:var(--warn);
+  margin-bottom:5px; font-weight:500;
+}
+
+footer{
+  margin-top:64px; padding-top:20px; border-top:1px solid var(--rule);
+  font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--muted);
+  display:flex; flex-wrap:wrap; gap:8px 24px;
+}
+
+@media (max-width:660px){
+  section{grid-template-columns:1fr; gap:0}
+  .num{padding-top:0; margin-bottom:6px}
+  .cell{border-right:0; border-bottom:1px solid var(--rule-soft)}
+  .row{grid-template-columns:96px minmax(0,1fr) 50px; gap:10px}
+  .bars .mark,.thresh b{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important; transition:none!important}}
+</style>
+
+<div class="wrap">
+
+<header class="mast">
+  <div class="kicker">CogniWatt · R2 · Conversational AI</div>
+  <h1>The Saturation Ceiling</h1>
+  <p class="standfirst">Four language models were asked to resolve everyday referring
+  expressions for a household robot. None of them can become confident enough to act.
+  Only asking the person can.</p>
+  <div class="byline">
+    <span><b>27,600</b> measured responses</span>
+    <span><b>660</b> scenarios · 58 audited cores</span>
+    <span><b>4</b> model configurations</span>
+    <span><b>100%</b> parse rate</span>
+  </div>
+</header>
+
+<div class="readout">
+  <div class="cell">
+    <div class="lab">0.5B Q8_0</div>
+    <div class="val">0.423</div>
+    <div class="note">pooled accuracy · chance 0.361</div>
+  </div>
+  <div class="cell">
+    <div class="lab">3B Q4_K_M</div>
+    <div class="val">0.603</div>
+    <div class="note">ceiling 0.546 at k=3</div>
+  </div>
+  <div class="cell">
+    <div class="lab">7B Q4_K_M</div>
+    <div class="val">0.782</div>
+    <div class="note">ceiling 0.731 at k=3</div>
+  </div>
+  <div class="cell">
+    <div class="lab">Threshold to act</div>
+    <div class="val">0.85</div>
+    <div class="note">reached by the human channel alone</div>
+  </div>
+</div>
+
+<section>
+  <div class="num">01</div>
+  <div class="body">
+    <h2>The question</h2>
+    <p>A household robot is told <em>“put the mug away.”</em> Three mugs are in view.
+    Before it can act it must decide which one is meant — and a misplaced object is
+    not free to undo, so it needs to be <em>confident</em>, not merely better than
+    chance.</p>
+    <p>The robot has four ways to resolve the ambiguity: think with a small on-device
+    model, think with a larger one, offload to a model too big to fit on the device,
+    or ask the person. Each costs energy, latency, or the human’s patience. Choosing
+    between them is the reinforcement-learning problem the wider project studies.
+    That problem only makes sense if the four channels are genuinely different, and
+    this chapter measures how different they are.</p>
+    <p>Every number here replaces a placeholder. Nothing was estimated.</p>
+  </div>
+</section>
+
+<section>
+  <div class="num">02</div>
+  <div class="body">
+    <h2>A dataset that cannot be gamed</h2>
+    <p>The obvious dataset is degenerate. Ask a model to pick between three identical
+    mugs and no model can beat chance, because there is no information in the text.
+    Every scenario here instead turns on a <strong>commonsense inference</strong>
+    that is inferable but not trivial:</p>
+
+    <div class="script">
+<span class="q">“put the mug away”</span>
+  A. a red mug on the kitchen counter, half full of coffee   <span class="t">← correct</span>
+  B. a blue mug already sitting inside the cupboard
+  C. a white mug hanging on its hook above the counter
+<span class="c">   the others are already put away</span>
+    </div>
+
+    <p>660 scenarios were expanded from <strong>58 hand-authored cores</strong> — six
+    nouns crossed with ten kinds of pragmatic inference. A core is one contrast: a
+    target plus distractors that are each individually defensible as the
+    <em>wrong</em> answer. Scenarios from one core are permutations of a single
+    contrast and are therefore not independent, so every confidence interval in this
+    chapter is a <strong>cluster bootstrap over cores</strong>, never over rows. The
+    naive interval is 15–25% narrower and would be a false precision.</p>
+
+    <p>Three shortcuts were designed out and then verified: the correct answer’s
+    position is exactly uniform, so a model that always answers first scores exactly
+    1/k; the correct answer’s colour is exactly uniform, and colours never appear in
+    the authored descriptions at all; and the target is the longest description no
+    more than three points above chance. The build fails rather than writes if any of
+    these drift.</p>
+  </div>
+</section>
+
+<section>
+  <div class="num">03</div>
+  <div class="body">
+    <h2>The instrument nearly broke the study</h2>
+    <p>The measurement protocol specified numbering the options <code>0. 1. 2.</code>
+    and asking for “the number only.” Under that prompt the 0.5B model answered
+    <strong>“1” on 237 of 240 prompts</strong> at temperature zero.</p>
+    <p>The tempting reading is that a tiny model cannot do pragmatics. The correct
+    reading is that it was not choosing an option at all. Relabelling the options
+    1-based did not help — it still answered “1” just as often, now meaning the
+    <em>first</em> option rather than the second. It has a prior on the
+    <strong>token</strong>, not on the candidate.</p>
+
+    <div class="tw">
+    <table>
+      <caption>Option labelling · Qwen2.5-0.5B · temperature 0 · 240 scenarios</caption>
+      <thead><tr><th>Labelling</th><th>Accuracy</th><th>Answer distribution</th></tr></thead>
+      <tbody>
+        <tr><td>0-based digits</td><td>0.358</td><td>“1” × 237 / 240</td></tr>
+        <tr><td>1-based digits</td><td>0.375</td><td>“1” × 168 / 240</td></tr>
+        <tr class="hi"><td>Letters A–D</td><td>0.483</td><td>A 107 · B 87 · C 35 · D 11</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <p>What makes this dangerous is that the broken version looked healthy: a 99.8%
+    parse rate, no errors, and a plausible number that would have entered the report
+    as a finding about model capability. Every tier now sees A/B/C/D. This is not
+    per-tier tuning — one template still serves all four — the template itself was
+    wrong.</p>
+  </div>
+</section>
+
+<section>
+  <div class="num">04</div>
+  <div class="body">
+    <h2>What each model can do</h2>
+    <p>Four configurations, one llama.cpp path, one prompt, one parser, and
+    <strong>identical candidate permutations</strong> so the comparison is paired.
+    Accuracy uses only the first of ten repeats — pooling all ten would inflate the
+    sample tenfold without adding a single independent observation. Format violations
+    are scored <em>wrong</em>, since a model that cannot emit an answer has failed the
+    task.</p>
+
+    <div class="tw">
+    <table>
+      <caption>Top-1 grounding accuracy · 95% CI clustered on 58 cores</caption>
+      <thead><tr><th>Tier</th><th>k=2</th><th>k=3</th><th>k=4</th><th>Pooled</th><th>95% CI</th></tr></thead>
+      <tbody>
+        <tr><td>Qwen2.5-0.5B Q8_0</td><td>0.541</td><td>0.400</td><td>0.327</td><td>0.423</td><td>0.379 – 0.466</td></tr>
+        <tr><td>Llama-3.2-3B Q4_K_M</td><td>0.709</td><td>0.573</td><td>0.527</td><td>0.603</td><td>0.534 – 0.671</td></tr>
+        <tr><td>Llama-3.2-3B Q8_0</td><td>0.691</td><td>0.555</td><td>0.532</td><td>0.592</td><td>0.521 – 0.662</td></tr>
+        <tr class="hi"><td>Qwen2.5-7B Q4_K_M</td><td>0.800</td><td>0.768</td><td>0.777</td><td>0.782</td><td>0.720 – 0.836</td></tr>
+        <tr class="chance"><td>chance</td><td>0.500</td><td>0.333</td><td>0.250</td><td>0.361</td><td>—</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <p>The 0.5B tier is barely above chance and falls apart as candidates are added.
+    The 7B is the only one that stays comfortably clear of it.</p>
+
+    <h3>The 7B’s accuracy is flat in k, and the smaller models’ is not</h3>
+    <p>Going from two candidates to four costs the 0.5B twenty-one points and the 3B
+    eighteen. It costs the 7B two. For the small models part of the difficulty is
+    <em>discrimination</em> — more candidates, more chances to be pulled onto a
+    distractor. For the 7B it is not: it either makes the pragmatic inference or it
+    does not, and how many wrong options sit beside the right one barely matters.
+    That is a qualitative change in failure mode, not just a quantitative one.</p>
+  </div>
+</section>
+
+<section>
+  <div class="num">05</div>
+  <div class="body">
+    <h2>Asking twice does not help twice</h2>
+    <p>Querying the same model again does not give a second independent opinion. A
+    quantised model at low temperature is close to deterministic, and even when
+    sampled its errors are systematically correlated — it misreads the same expression
+    the same way. Information from a given model <strong>saturates</strong>.</p>
+    <p>This was measured as an intra-class correlation across ten repeats of each
+    scenario, converted to effective independent draws, and fitted to the geometric
+    decay the environment uses. Before any of it touched a real model, the estimator
+    was validated against a generator whose correlation is known in closed form; it
+    recovers a known value to within 0.03.</p>
+
+    <div class="tw">
+    <table>
+      <caption>Evidence saturation · N=10 repeats per scenario</caption>
+      <thead><tr><th>Tier</th><th>ρ (repeat corr.)</th><th>γ (decay)</th><th>95% CI</th><th>Effective draws</th></tr></thead>
+      <tbody>
+        <tr><td>Qwen2.5-0.5B</td><td>0.100</td><td>0.840</td><td>0.814 – 0.871</td><td>9.96</td></tr>
+        <tr><td>Llama-3.2-3B</td><td>0.275</td><td>0.641</td><td>0.577 – 0.706</td><td>3.64</td></tr>
+        <tr><td>Qwen2.5-7B</td><td>0.525</td><td>0.401</td><td>0.341 – 0.494</td><td>1.90</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <div class="claim">
+      <p>Ranked by γ alone, the 0.5B is the richest evidence source in the study and
+      the 7B the poorest. That ordering is exactly backwards, and it is the most
+      important methodological point in this chapter.</p>
+    </div>
+
+    <p>γ measures <em>variability</em>, not information. The 0.5B is close to random,
+    and random answers look independent — its repeats are independent
+    <em>noise</em>. The 7B is more self-consistent, so re-querying it genuinely buys
+    less. Both facts are real, and neither can be read from γ without accuracy beside
+    it. The project’s reward model composes them correctly; its prose must not quote
+    γ on its own.</p>
+    <p>This also retires a diagnostic the protocol proposed: “γ ≈ 1 everywhere means
+    the sampling temperature is too high.” Here the near-1 γ belongs to the
+    <em>weakest</em> tier at an ordinary temperature, and lowering the temperature
+    made that tier worse, not better.</p>
+  </div>
+</section>
+
+<section>
+  <div class="num">06</div>
+  <div class="body">
+    <h2>The ceiling</h2>
+    <p>Accuracy and γ only matter through the decision they enable. Placing an object
+    is irreversible, so the robot should not commit below roughly a 0.85 posterior on
+    the right referent. The question is therefore not how accurate a tier is, but
+    whether querying it repeatedly can ever get there.</p>
+    <p>Running each tier through the environment’s own belief filter — imported and
+    driven, not reimplemented, so it cannot drift from what training does — gives the
+    confidence each channel converges to after unlimited queries.</p>
+
+    <div class="chart">
+      <div class="lab">Saturation ceiling at k = 3 · 4,000 trials · 40 queries deep</div>
+      <div class="bars">
+      <div class="mark"></div>
+      <div class="row">
+        <div class="who">Qwen2.5-0.5B<span>γ 0.840</span></div>
+        <div class="track"><div class="fill" style="width:37.4%"></div></div>
+        <div class="v">0.374</div>
+      </div>
+      <div class="row">
+        <div class="who">Llama-3.2-3B<span>γ 0.641</span></div>
+        <div class="track"><div class="fill" style="width:54.6%"></div></div>
+        <div class="v">0.546</div>
+      </div>
+      <div class="row">
+        <div class="who">Qwen2.5-7B<span>γ 0.401</span></div>
+        <div class="track"><div class="fill" style="width:73.1%"></div></div>
+        <div class="v">0.731</div>
+      </div>
+      <div class="row">
+        <div class="who">Ask the person<span>γ 0.150</span></div>
+        <div class="track"><div class="fill ok" style="width:90.9%"></div></div>
+        <div class="v">0.909</div>
+      </div>
+      </div>
+      <div class="thresh"><b>0.85 — threshold to act</b></div>
+    </div>
+
+    <div class="claim">
+      <p>No model available to a domestic robot — 0.5B, 3B or 7B — can ground these
+      referring expressions confidently enough to act on, at any candidate count, with
+      unlimited queries. Only asking the person can. Dialogue is not a fallback; it is
+      the primary channel.</p>
+    </div>
+
+    <h3>Two checks before believing it</h3>
+    <p><strong>The task is not impossible.</strong> The human channel clears the
+    threshold comfortably at every candidate count, so the environment is solvable and
+    the models simply cannot solve it. Had the human channel failed too, the honest
+    conclusion would have been that the dataset is broken.</p>
+    <p><strong>It does not balance on the 0.85 figure.</strong> Each channel is usable
+    only if the threshold sits at or below its ceiling — 0.904 for the human, 0.731
+    for the 7B, 0.509 for the 3B, 0.300 for the 0.5B. For <em>any</em> threshold
+    between 0.731 and 0.904, a band seventeen points wide, the human is the only
+    usable channel. The conclusion survives a wide range of assumptions about how
+    cautious a robot should be before an irreversible act.</p>
+  </div>
+</section>
+
+<section>
+  <div class="num">07</div>
+  <div class="body">
+    <h2>Scale buys state-tracking, not judgement</h2>
+    <p>Scaling from 0.5B to 7B does not lift every kind of inference equally, and the
+    split is not random.</p>
+
+    <div class="tw">
+    <table>
+      <caption>Accuracy by pragmatic family · first repeat · sorted by gain</caption>
+      <thead><tr><th>Family</th><th>0.5B</th><th>3B</th><th>7B</th><th>Gain</th></tr></thead>
+      <tbody>
+        <tr><td>recency — the one just used</td><td>0.278</td><td>0.639</td><td>0.889</td><td class="up">+0.611</td></tr>
+        <tr><td>already satisfied — the others are away</td><td>0.333</td><td>0.583</td><td>0.833</td><td class="up">+0.500</td></tr>
+        <tr><td>state blocks — the one in use</td><td>0.403</td><td>0.417</td><td>0.833</td><td class="up">+0.430</td></tr>
+        <tr><td>condition — the broken one</td><td>0.375</td><td>0.431</td><td>0.792</td><td class="up">+0.417</td></tr>
+        <tr><td>proximity — the nearest one</td><td>0.611</td><td>0.750</td><td>0.972</td><td class="up">+0.361</td></tr>
+        <tr><td>salience — the odd one out</td><td>0.528</td><td>0.764</td><td>0.819</td><td>+0.291</td></tr>
+        <tr><td>affordance — the one that fits</td><td>0.403</td><td>0.583</td><td>0.694</td><td class="dn">+0.291</td></tr>
+        <tr><td>ownership — whose it is</td><td>0.417</td><td>0.694</td><td>0.708</td><td class="dn">+0.291</td></tr>
+        <tr><td>purpose fit — what it is for</td><td>0.347</td><td>0.528</td><td>0.611</td><td class="dn">+0.264</td></tr>
+        <tr><td>exclusion — everything else is spoken for</td><td>0.458</td><td>0.625</td><td>0.708</td><td class="dn">+0.250</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <p>Everything scale fixes turns on <strong>reading an object’s current state or
+    position</strong>: which was just used, which is already away, which is in use,
+    which is broken, which is nearest. Everything scale barely touches turns on
+    <strong>what a thing is for, who owns it, or what a destination can
+    accept</strong> — normative and functional judgements rather than observational
+    ones.</p>
+
+    <div class="claim">
+      <p>Model scale buys state-tracking. It does not buy normative reasoning.</p>
+    </div>
+
+    <p>This is also why the ceiling stalls. The largest tier’s residual errors are
+    concentrated in exactly the families that scale does not fix — the four where even
+    the 7B stays under 0.75 are purpose fit, affordance, exclusion and ownership — so
+    a larger model would not obviously rescue it.</p>
+
+    <div class="script">
+<span class="q">“could you put the bottle on the shelf”</span>
+  A. a blue bottle of oil that keeps at room temperature   <span class="t">← correct</span>
+  B. a red bottle of milk already sweating in the warm     <span class="x">← 7B chose</span>
+<span class="c">   only the shelf-stable one can go on a shelf</span>
+    </div>
+
+    <p>The model appears to read “sweating in the warm” as <em>this one needs dealing
+    with urgently</em> rather than <em>this one must not go on a shelf</em>. It finds
+    a salient cue and acts on it without checking it against what the destination can
+    accept. Asked to put a mug in a drawer, it likewise chose a tall flared mug over
+    one whose description states outright that it <em>clears the drawer lip</em>.</p>
+  </div>
+</section>
+
+<section>
+  <div class="num">08</div>
+  <div class="body">
+    <h2>It is scale, not quantisation</h2>
+    <p>A 3B model at four bits scoring 0.603 supports two very different claims:
+    that 3B-class models are insufficient, or that aggressive quantisation destroys
+    grounding. The second would be the more useful finding, because it would mean the
+    tier is recoverable by shipping better weights. It was tested directly, with a
+    near-lossless Q8_0 build of the same model on the same permutations.</p>
+
+    <div class="tw">
+    <table>
+      <caption>Quantisation ablation · Llama-3.2-3B · paired on 660 scenarios</caption>
+      <thead><tr><th>Build</th><th>Size</th><th>k=2</th><th>k=3</th><th>k=4</th><th>Pooled</th></tr></thead>
+      <tbody>
+        <tr><td>Q4_K_M</td><td>2.0 GB</td><td>0.709</td><td>0.573</td><td>0.527</td><td>0.603</td></tr>
+        <tr><td>Q8_0</td><td>3.4 GB</td><td>0.691</td><td>0.555</td><td>0.532</td><td>0.592</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <p>Because both ran on identical permutations this is a paired comparison, which
+    is far stronger than noting that the intervals overlap. The paired difference is
+    <strong>−0.011</strong> with a clustered 95% interval of −0.042 to +0.020, spanning
+    zero; McNemar’s exact test gives <strong>p = 0.500</strong>; and the two builds
+    <strong>agree on 581 of 660 scenarios</strong>. They do not merely score alike —
+    they make the same mistakes.</p>
+    <p>So the limitation belongs to the model, not to numerical precision. It also
+    closes the obvious objection to the ceiling result: the 3B’s ceiling is not an
+    artefact of an aggressive edge quant, and better weights would not recover the
+    tier. One practical note for deployment — the 2.0 GB build is at least as accurate
+    as the 3.4 GB one, which on a 4 GB card is the difference between fitting and
+    spilling, for no measurable accuracy cost.</p>
+  </div>
+</section>
+
+<section>
+  <div class="num">09</div>
+  <div class="body">
+    <h2>What thinking costs</h2>
+    <p>Measured on the discrete GPU on mains power, energy above idle, with a 12.34 W
+    idle baseline. The sampler on this hardware delivers about 3.4 Hz rather than the
+    nominal 10 Hz, so each measurement batches enough calls to collect at least twenty
+    power samples; sizing off the nominal rate is how this measurement produces
+    confident nonsense.</p>
+
+    <div class="tw">
+    <table>
+      <caption>Per-inference cost · RTX 3050 Laptop 4 GB · median (IQR)</caption>
+      <thead><tr><th>Tier</th><th>Latency</th><th>Energy</th><th>VRAM</th><th>Valid anchor</th></tr></thead>
+      <tbody>
+        <tr><td>Qwen2.5-0.5B Q8_0</td><td>19.6 ms</td><td>837 mJ</td><td>877 / 4096</td><td>yes</td></tr>
+        <tr><td>Llama-3.2-3B Q4_K_M</td><td>34.0 ms</td><td>1,675 mJ</td><td>2,373 / 4096</td><td>yes</td></tr>
+        <tr><td>Qwen2.5-7B Q4_K_M</td><td>152.4 ms</td><td>6,836 mJ</td><td>3,919 / 4096</td><td class="dn">no</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <p>Roughly eight times the latency and eight times the energy from the smallest
+    tier to the largest — and, from §06, still not enough to act on. The 7B is marked
+    as not a valid device anchor because it does not truly fit: the driver
+    oversubscribes into shared system memory rather than failing, so the figure
+    includes host-memory traffic. It is what serving that model costs on this
+    hardware, not what a resident 7B costs.</p>
+  </div>
+</section>
+
+<section>
+  <div class="num">10</div>
+  <div class="body">
+    <h2>The channel that works</h2>
+    <p>Asking the person is only as good as the speech recognition behind it. Short
+    answers to clarification questions were synthesised, mixed with noise at
+    controlled signal-to-noise ratios, and transcribed.</p>
+
+    <div class="tw">
+    <table>
+      <caption>Speech recognition · faster-whisper small · 120 clips per condition</caption>
+      <thead><tr><th>SNR</th><th>Word error rate</th><th>Referent recovery</th></tr></thead>
+      <tbody>
+        <tr><td>clean</td><td>0.023</td><td>1.000</td></tr>
+        <tr><td>20 dB</td><td>0.028</td><td>1.000</td></tr>
+        <tr class="hi"><td>15 dB — living room</td><td>0.034</td><td>0.992</td></tr>
+        <tr><td>10 dB</td><td>0.045</td><td>1.000</td></tr>
+        <tr><td>5 dB</td><td>0.080</td><td>0.975</td></tr>
+        <tr><td>0 dB</td><td>0.426</td><td>0.917</td></tr>
+      </tbody>
+    </table>
+    </div>
+
+    <p>The bottom row matters more than the operating point. At 0 dB the word error
+    rate is 0.426 while <strong>referent recovery is still 0.917</strong>. The two
+    diverge sharply under noise, because the robot does not consume a transcript — it
+    consumes whether the right object was identified, and “the red one” survives a
+    great deal of mangling. Degrading the human channel by word error rate, as the
+    environment originally did, understates it badly in exactly the noisy conditions
+    that matter.</p>
+  </div>
+</section>
+
+<section>
+  <div class="num">11</div>
+  <div class="body">
+    <h2>What would change these conclusions</h2>
+    <ul class="caveats">
+      <li><b>The speech corpus is synthetic</b>
+      Utterances were produced by text-to-speech, which is cleaner and better
+      articulated than human speech. The 0.034 word error rate is a lower bound and
+      the human channel’s 0.937 effective accuracy an upper bound. Reaching the point
+      where the human stops being the best channel needs a word error rate of 0.124 —
+      3.7× the measured value, which is an ordinary penalty moving from clean
+      synthesis to real conversational speech.</li>
+
+      <li><b>The ground truth is not yet human-audited</b>
+      The 58 cores were authored by a model and verified structurally, not by
+      independent readers. A blind audit sheet exists and needs two annotators. Every
+      accuracy figure in this chapter inherits from that ground truth; if a core is
+      mis-keyed, the numbers move.</li>
+
+      <li><b>One family is under-powered</b>
+      Sixty scenarios were dropped after measurement revealed a genuine ambiguity:
+      when the instruction names the destination and a distractor already sits there,
+      “the mug on the shelf” reads as an identifying description as easily as a
+      destination. Dropping them widened the accuracy gradient, but it reduced the
+      “already satisfied” family to twelve scenarios, so per-family claims about it
+      are weak.</li>
+
+      <li><b>The offload tier is a stand-in</b>
+      It is a locally hosted 7B representing a model too large to sit on the device.
+      This keeps every tier on one inference stack, so differences are model scale
+      rather than serving infrastructure — but it is not a commercial frontier model,
+      and a substantially stronger one might clear the threshold where this one does
+      not.</li>
+
+      <li><b>The threshold is a modelling choice</b>
+      0.85 comes from the reward structure of the surrounding environment, not from
+      measurement. The conclusion holds anywhere in 0.731–0.904; outside that band it
+      changes.</li>
+    </ul>
+  </div>
+</section>
+
+<footer>
+  <span>CogniWatt · R2 workstream</span>
+  <span>27,600 responses · 4 configurations · 660 scenarios</span>
+  <span>All figures measured; none estimated</span>
+</footer>
+
+</div>

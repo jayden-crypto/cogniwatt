@@ -184,7 +184,252 @@ Two findings that change the §7b protocol:
 
 ---
 
-## 3a. REAL measurements — both local tiers, paired
+## 3A. ALL THREE TIERS — the headline result
+
+`offload` is **Qwen2.5-7B-Instruct Q4_K_M, hosted locally** (R1 reply 4): a
+model too large to reside on a 4 GB device, which is what the tier means. Every
+tier now runs on one llama.cpp path, so a difference between them is model
+scale rather than a different tokenizer, sampler and safety layer. 19 800
+queries, parse rate **100 %** on all three.
+
+| tier | model | k=2 | k=3 | k=4 | pooled | rho | gamma |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `think_tiny` | Qwen2.5-0.5B Q8_0 | 0.541 | 0.400 | 0.327 | **0.423** | 0.100 | **0.840** |
+| `think_big` | Llama-3.2-3B Q4_K_M | 0.709 | 0.573 | 0.527 | **0.603** | 0.275 | **0.641** |
+| `offload` | Qwen2.5-7B Q4_K_M | 0.800 | 0.768 | 0.777 | **0.782** | 0.525 | **0.401** |
+| *chance* | | 0.500 | 0.333 | 0.250 | 0.361 | | |
+
+Gradient spread **0.359**.
+
+### gamma falls monotonically with scale — three points, not two
+
+0.840 → 0.641 → 0.401. With a third tier this is a trend rather than an
+accident, and it is the opposite of what R2_HANDOFF §6.2 predicted. The
+mechanism is now unambiguous: a more capable model is more *self-consistent*
+(rho 0.100 → 0.275 → 0.525), so re-querying it buys less. A weak model looks
+variable because it is nearly random, and random answers are independent.
+
+R1's placeholder for `OFFLOAD` was gamma 0.35 against a measured 0.401 — close.
+The accuracy placeholder of 0.88 against a measured 0.782 was ten points
+optimistic.
+
+### The 7B's accuracy is flat in k, and the smaller models' is not
+
+`think_tiny` falls 0.541 → 0.327 across k, `think_big` 0.709 → 0.527, but
+`offload` is flat: 0.800 / 0.768 / 0.777. Adding distractors costs the small
+models heavily and costs the 7B essentially nothing.
+
+That is a qualitative change in failure mode, not just a quantitative one. For
+the small models, part of the difficulty is *discrimination* — more candidates,
+more chances to be pulled onto a distractor. For the 7B it is not: it either
+makes the pragmatic inference or it does not, and how many wrong options sit
+beside the right one barely matters. This is the sharpest evidence in the study
+for "the failure is pragmatics, not perception".
+
+---
+
+## 3E. Quantisation ablation — it is scale, not Q4
+
+R1 reply 3 §6 asked whether `think_big` at 0.603 is a statement about *3B-scale
+models* or about *what Q4_K_M does to a 3B*. Those support very different
+claims, so it had to be settled before writing either.
+
+Llama-3.2-3B-Instruct **Q8_0** (near-lossless), same model, same prompt, same
+parser, **same permutations**, same temperature, full N=10 × 660 protocol.
+
+| | k=2 | k=3 | k=4 | pooled | 95 % CI |
+| --- | --- | --- | --- | --- | --- |
+| Q4_K_M | 0.709 | 0.573 | 0.527 | **0.603** | [0.534, 0.671] |
+| Q8_0 | 0.691 | 0.555 | 0.532 | **0.592** | [0.521, 0.662] |
+
+Because both ran on identical permutations this is a **paired** comparison,
+which is far more powerful than noting that the intervals overlap:
+
+* paired difference **−0.0106** (Q8 marginally *lower*)
+* 95 % CI clustered on core: **[−0.042, +0.020]** — includes zero
+* discordant pairs: 43 where Q4 was right and Q8 wrong, 36 the other way
+* **McNemar exact p = 0.500**
+* the two quants **agree on 581 of 660 scenarios (88 %)**
+
+> **Quantisation is not the limiting factor.** Q8_0 and Q4_K_M are
+> statistically indistinguishable on this task, and they largely make the *same
+> errors* — so the failures are a property of the model, not of numerical
+> precision. "3B-class models are insufficient for this grounding task" is the
+> safe claim; "Q4 destroys grounding" is not supported.
+
+This also strengthens §3B: the 3B's ceiling of 0.546 at k=3 is not an artefact
+of an aggressive edge quant, and shipping a better quant would not recover the
+tier.
+
+A useful side note for the report's deployment story: Q4_K_M is 2.0 GB and
+Q8_0 is 3.4 GB, and the smaller one is at least as accurate here. On a 4 GB
+card that is the difference between a comfortable fit and spilling into shared
+memory, for no measurable accuracy cost.
+
+---
+
+## 3D. What scale actually buys — Deliverable F, all three tiers
+
+Accuracy by pragmatic family, first repeat, sorted by what scaling 0.5B → 7B
+buys:
+
+| family | 0.5B | 3B | 7B | gain |
+| --- | --- | --- | --- | --- |
+| `recency` | 0.278 | 0.639 | 0.889 | **+0.611** |
+| `already_satisfied` | 0.333 | 0.583 | 0.833 | +0.500 |
+| `state_blocks` | 0.403 | 0.417 | 0.833 | +0.430 |
+| `condition` | 0.375 | 0.431 | 0.792 | +0.417 |
+| `proximity` | 0.611 | 0.750 | 0.972 | +0.361 |
+| `salience` | 0.528 | 0.764 | 0.819 | +0.291 |
+| `affordance` | 0.403 | 0.583 | 0.694 | +0.291 |
+| `ownership` | 0.417 | 0.694 | 0.708 | +0.291 |
+| `purpose_fit` | 0.347 | 0.528 | 0.611 | **+0.264** |
+| `exclusion` | 0.458 | 0.625 | 0.708 | +0.250 |
+
+The split is not random. The five families scale helps most —
+`recency`, `already_satisfied`, `state_blocks`, `condition`, `proximity` — all
+turn on **reading an object's current state or position** from its description:
+which one was just used, which is already put away, which is in use, which is
+broken, which is nearest.
+
+The families scale helps least — `purpose_fit`, `exclusion`, `ownership`,
+`affordance` — all turn on **what a thing is for, or who it belongs to, or what
+a destination can accept**. These are normative and functional, not
+observational.
+
+> **Model scale buys state-tracking; it does not buy normative reasoning.**
+
+That is also why the ceiling stalls (§3B): the residual errors of the largest
+tier are concentrated in exactly the families that scale does not fix. The four
+families where even the 7B stays under 0.75 are `purpose_fit` (0.611),
+`affordance` (0.694), `exclusion` (0.708) and `ownership` (0.708).
+
+### Qualitative transcripts
+
+```
+"put the book on the table"                        [purpose_fit, 7B wrong]
+  A. a green book of takeaway menus              <- correct
+  B. a striped book of pressed flowers, fragile  <- 7B chose
+```
+The same core with the options reversed produces the same error (it took the
+tax-records binder over the menus), so this is not position bias — the model
+genuinely does not apply "a table is being laid for a meal".
+
+```
+"put the mug in the drawer"                        [affordance, 7B wrong]
+  A. a black mug, tall, with a wide flared rim              <- 7B chose
+  B. a blue mug, squat and handleless, that clears the drawer lip  <- correct
+```
+The correct description states the constraint explicitly — *clears the drawer
+lip* — and the model still ignored it.
+
+```
+"could you put the bottle on the shelf"            [affordance, 7B wrong]
+  A. a blue bottle of oil that keeps at room temperature  <- correct
+  B. a red bottle of milk already sweating in the warm    <- 7B chose
+```
+A plausible-but-wrong inference: it appears to read "sweating in the warm" as
+*this one needs dealing with urgently* rather than *this one must not go on a
+shelf*. The model finds a salient cue and acts on it without checking it
+against what the destination can accept.
+
+---
+
+## 3C. Deliverable D — per-tier latency and energy (measured, on mains)
+
+RTX 3050 Laptop 4 GB, driver 595.79, mains, ambient 24 °C, fan curve default.
+**P_idle 12.34 W** (IQR 12.25–12.39). Energy is measured *above idle*: the idle
+draw is what the device spends existing, and charging it to the model would
+make a fast model look expensive for being measured on a machine that was
+already on.
+
+| tier | latency (median) | IQR | energy/call | IQR | VRAM used | valid anchor |
+| --- | --- | --- | --- | --- | --- | --- |
+| `think_tiny` 0.5B Q8_0 | 19.6 ms | [14.4, 19.8] | **837 mJ** | [725, 855] | 877/4096 | yes |
+| `think_big` 3B Q4_K_M | 34.0 ms | [33.8, 34.1] | **1675 mJ** | [1630, 1742] | 2373/4096 | yes |
+| `offload` 7B Q4_K_M | 152.4 ms | [148.8, 155.1] | **6836 mJ** | [6607, 7046] | 3919/4096 | **no** |
+
+Roughly 8× the latency and 8× the energy from 0.5B to 7B — the cost side of the
+scale ladder in §3A.
+
+### Three caveats that belong in the report
+
+**1. The 7B is not a valid device anchor, and the first version of this script
+said it was.** `valid_device_anchor` originally tested only whether full GPU
+offload was *requested* (`n_gpu_layers == -1`). On Windows the WDDM driver
+silently oversubscribes into shared system memory rather than failing, so
+llama.cpp reports "29/29 layers offloaded" while part of the model lives in
+host RAM — a 4168 MiB model buffer against a 4096 MiB card. Energy measured in
+that state includes host-memory traffic. The check now also requires the card
+not to be at its limit (< 93 % occupancy), which correctly fails the 7B at
+95.7 %. The number is still what serving that model costs *on this hardware*;
+it is not "a GPU-resident 7B".
+
+**2. `offload` energy is a SERVER-side figure, not the robot's cost.** The tier
+is a locally hosted large model standing in for a network service. What it
+costs the robot to offload is radio energy plus network latency, which R1
+models from published figures; `interfaces/ved.py` is untouched. The 6836 mJ is
+recorded because it was free to collect and gives the server side of the energy
+story, not because the env consumes it.
+
+**3. P_idle drifts with temperature, and energy is measured against it.**
+Across runs: 11.25 W at 48 °C, 11.69 W at 54 °C, 12.34–12.81 W at 63 °C. Each
+run takes its own baseline under matching thermal conditions, so the figures
+are internally consistent — but applying a cold baseline to a warm run would
+overstate energy by roughly 3–5 %. Two independent runs agreed to within 1 % on
+every tier (19.8 vs 19.6 ms; 1665 vs 1675 mJ; 6900 vs 6836 mJ) despite a 0.5 W
+difference in baseline, which is the best evidence that the protocol is sound.
+
+The sampler ran at **3.38 Hz effective against 10 Hz nominal**, so bursts were
+auto-sized to 5917 ms for ≥ 20 samples each — 210, 100 and 17 calls per burst
+respectively. Sizing off the nominal rate would have left ~6 samples per
+measurement, which is the failure §7b warns about.
+
+---
+
+## 3B. Saturation ceilings — no model tier can support a confident `place()`
+
+`scripts/r2_ceiling.py`, driving **R1's own** `BeliefState` and likelihood
+construction (imported, not reimplemented, so it cannot drift from what
+training does). 4 000 Monte-Carlo trials, 40 queries deep, weight `gamma**n`
+per query exactly as `evidence_weight` specifies.
+
+| tier | k=2 | k=3 | k=4 | reaches 0.85? |
+| --- | --- | --- | --- | --- |
+| `think_tiny` | 0.521 | 0.374 | 0.300 | no |
+| `think_big` | 0.706 | 0.546 | 0.509 | no |
+| `offload` (7B) | 0.760 | 0.731 | 0.750 | **no** |
+| `ask` (human, placeholder acc, measured ASR) | 0.904 | 0.909 | 0.910 | **yes** |
+
+> **No model available to a domestic robot — 0.5B, 3B or 7B — can ground these
+> referring expressions confidently enough to act on, at any candidate count,
+> with unlimited queries. Only asking the person can. Dialogue is not a
+> fallback; it is the primary channel.**
+
+This is R1 reply 4 §2's alternative outcome, and it is now measured rather than
+hypothesised.
+
+**It is not an artefact of an impossible task.** `ask` clears the threshold
+comfortably, so the environment is solvable — the models simply cannot solve it.
+
+**It is not knife-edge on R1's 0.85 threshold either.** Each tier is usable
+only if the threshold sits at or below its ceiling:
+
+| tier | usable iff threshold <= |
+| --- | --- |
+| `ask` | 0.904 |
+| `offload` | 0.731 |
+| `think_big` | 0.509 |
+| `think_tiny` | 0.300 |
+
+So for **any** threshold in `(0.731, 0.904]` — a band 17 points wide — the human
+is the only usable channel. The conclusion holds across a wide range of how
+cautious you assume the robot should be about an irreversible action, which is
+what makes it worth reporting rather than a coincidence of one chosen constant.
+
+---
+
+## 3a. REAL measurements — both local tiers, paired (superseded by §3A)
 
 Llama-3.2-3B-Instruct **Q4_K_M**, **29/29 layers on GPU** (1918 MiB weights +
 112 MiB KV + 256 MiB compute ≈ 2.29 GB against 3305 MiB free) — Q4_K_M holds,

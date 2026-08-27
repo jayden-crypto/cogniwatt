@@ -1,0 +1,99 @@
+{
+  "threshold": 0.85,
+  "queries": 40,
+  "trials": 4000,
+  "by_tier": {
+    "ask": {
+      "2": {
+        "one_query_posterior": 0.8837404024999999,
+        "ceiling": 0.9038076953851724,
+        "reaches_threshold": true,
+        "share_of_trials_above": 0.93875,
+        "effective_draws": 1.1764705882352942
+      },
+      "3": {
+        "one_query_posterior": 0.8845384513749998,
+        "ceiling": 0.9088879166404517,
+        "reaches_threshold": true,
+        "share_of_trials_above": 0.94175,
+        "effective_draws": 1.1764705882352942
+      },
+      "4": {
+        "one_query_posterior": 0.8841589493333332,
+        "ceiling": 0.9104960631175458,
+        "reaches_threshold": true,
+        "share_of_trials_above": 0.942,
+        "effective_draws": 1.1764705882352942
+      }
+    },
+    "offload": {
+      "2": {
+        "one_query_posterior": 0.6866000000000001,
+        "ceiling": 0.7598927751303136,
+        "reaches_threshold": false,
+        "share_of_trials_above": 0.6155,
+        "effective_draws": 1.6691486913279943
+      },
+      "3": {
+        "one_query_posterior": 0.6263125,
+        "ceiling": 0.7311741144087127,
+        "reaches_threshold": false,
+        "share_of_trials_above": 0.5935,
+        "effective_draws": 1.6691486913279943
+      },
+      "4": {
+        "one_query_posterior": 0.6266484848484849,
+        "ceiling": 0.7502751997914355,
+        "reaches_threshold": false,
+        "share_of_trials_above": 0.614,
+        "effective_draws": 1.6691486913279943
+      }
+    },
+    "think_big": {
+      "2": {
+        "one_query_posterior": 0.5927318181818182,
+        "ceiling": 0.706471963270953,
+        "reaches_threshold": false,
+        "share_of_trials_above": 0.32575,
+        "effective_draws": 2.7849991156053426
+      },
+      "3": {
+        "one_query_posterior": 0.4198443181818183,
+        "ceiling": 0.5461800625087514,
+        "reaches_threshold": false,
+        "share_of_trials_above": 0.05975,
+        "effective_draws": 2.7849991156053426
+      },
+      "4": {
+        "one_query_posterior": 0.3587833333333333,
+        "ceiling": 0.5089111924208646,
+        "reaches_threshold": false,
+        "share_of_trials_above": 0.06875,
+        "effective_draws": 2.7849991156053426
+      }
+    },
+    "think_tiny": {
+      "2": {
+        "one_query_posterior": 0.5039886363636363,
+        "ceiling": 0.5213844552872915,
+        "reaches_threshold": false,
+        "share_of_trials_above": 0.0,
+        "effective_draws": 6.269161872043636
+      },
+      "3": {
+        "one_query_posterior": 0.340975,
+        "ceiling": 0.3743424399321616,
+        "reaches_threshold": false,
+        "share_of_trials_above": 0.0,
+        "effective_draws": 6.269161872043636
+      },
+      "4": {
+        "one_query_posterior": 0.2588348484848484,
+        "ceiling": 0.3000521585080903,
+        "reaches_threshold": false,
+        "share_of_trials_above": 0.0,
+        "effective_draws": 6.269161872043636
+      }
+    }
+  }
+}

@@ -455,6 +455,24 @@ DEFAULT_MODELS_DIR = os.path.join("models")
 TIER_MODEL_FILES: Dict[str, str] = {
     "think_tiny": "qwen2.5-0.5b-instruct-q8_0.gguf",
     "think_big": "llama-3.2-3b-instruct-q4_k_m.gguf",
+    # `offload` is a *locally hosted* large model, not a commercial API. What
+    # the env consumes from this tier is an accuracy, a decay constant, and a
+    # modelled network-latency/radio-energy cost -- none of which require the
+    # model to be remote. The definition that matters for an edge project is
+    # "too large to reside on the device, reached over a network", and 4.7 GB
+    # on a 4 GB card is exactly that.
+    #
+    # Measuring it locally is also the better-controlled experiment: every tier
+    # then runs on one llama.cpp path, so an accuracy difference is model scale
+    # rather than a different tokenizer, sampler and safety layer. The Anthropic
+    # backends remain in this module, written and unused -- no budget was
+    # approved for them -- and `make_backend(..., cloud_api=True)` still reaches
+    # them if that ever changes.
+    "offload": "qwen2.5-7b-instruct-q4_k_m.gguf",
+    # Quantisation ablation: same model and size as `think_big`, near-
+    # lossless quant. Answers whether 0.603 is a fact about 3B-scale
+    # models or about what Q4_K_M does to one.
+    "think_big_q8": "llama-3.2-3b-instruct-q8_0.gguf",
 }
 
 #: Mock calibration. Deliberately set to the handoff's target gradient
@@ -472,7 +490,8 @@ MOCK_PROFILE: Dict[str, Dict[str, float]] = {
 
 def make_backend(tier: str, mock: bool = False, models_dir: str = DEFAULT_MODELS_DIR,
                  temperature: float = 0.7, n_gpu_layers: int = -1,
-                 seed: int = 0, live_cloud: bool = False) -> Backend:
+                 seed: int = 0, live_cloud: bool = False,
+                 cloud_api: bool = False) -> Backend:
     """Build the backend for `tier`. The only place a tier maps to a model."""
     if mock:
         if tier not in MOCK_PROFILE:
@@ -485,7 +504,9 @@ def make_backend(tier: str, mock: bool = False, models_dir: str = DEFAULT_MODELS
         be.temperature = temperature
         return be
 
-    if tier == "offload":
+    if tier == "offload" and cloud_api:
+        # Only on an explicit opt-in. Never the default: no API budget was
+        # approved, and the local large model is the better experiment anyway.
         cls = AnthropicLiveBackend if live_cloud else AnthropicBatchBackend
         return cls(temperature=temperature)
 
