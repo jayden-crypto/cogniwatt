@@ -1,0 +1,706 @@
+<title>Referent Audit</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:ital,wght@0,400;0,500;1,400&display=swap">
+<style>
+:root{
+  --paper:#F2F5F6; --card:#FFFFFF; --ink:#0F1618; --ink-2:#3E4E52; --ink-3:#6D8085;
+  --rule:#DBE3E5; --rule-2:#EAF0F1;
+  --accent:#0E6F6B; --accent-soft:#DCEDEC; --accent-ink:#0A5451;
+  --unsure:#9A6510; --unsure-soft:#F6EAD8;
+  --shadow:0 1px 2px rgba(15,40,45,.05),0 10px 28px -18px rgba(15,40,45,.28);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --paper:#0C1214; --card:#131C1F; --ink:#E7EEEF; --ink-2:#AFC1C4; --ink-3:#7E9295;
+  --rule:#243235; --rule-2:#1A2528;
+  --accent:#4FBFB8; --accent-soft:#12312F; --accent-ink:#7BD6CF;
+  --unsure:#D9A25A; --unsure-soft:#2E2314;
+  --shadow:0 1px 2px rgba(0,0,0,.5),0 12px 32px -18px rgba(0,0,0,.8);
+}}
+:root[data-theme="dark"]{
+  --paper:#0C1214; --card:#131C1F; --ink:#E7EEEF; --ink-2:#AFC1C4; --ink-3:#7E9295;
+  --rule:#243235; --rule-2:#1A2528;
+  --accent:#4FBFB8; --accent-soft:#12312F; --accent-ink:#7BD6CF;
+  --unsure:#D9A25A; --unsure-soft:#2E2314;
+  --shadow:0 1px 2px rgba(0,0,0,.5),0 12px 32px -18px rgba(0,0,0,.8);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding:0 20px 120px}
+h1{font-family:"IBM Plex Serif",Georgia,serif;font-weight:500;font-size:1.75rem;
+  margin:0 0 .3rem;letter-spacing:-.01em;text-wrap:balance}
+.mono{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace}
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:.7rem;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--ink-3)}
+.bar{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--paper) 88%,transparent);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--rule);margin-bottom:26px}
+.bar-in{max-width:760px;margin:0 auto;padding:10px 20px;display:flex;gap:14px;
+  align-items:center;flex-wrap:wrap}
+.count{font-family:"IBM Plex Mono",monospace;font-size:.82rem;color:var(--ink-2);
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+.track{flex:1 1 120px;height:5px;background:var(--rule);border-radius:99px;overflow:hidden;min-width:100px}
+.fill{height:100%;width:0;background:var(--accent);border-radius:99px;transition:width .25s ease}
+input[type=text]{font:inherit;font-size:.85rem;padding:5px 9px;border:1px solid var(--rule);
+  border-radius:7px;background:var(--card);color:var(--ink);width:150px}
+input[type=text]:focus-visible{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+button{font:inherit;font-size:.82rem;font-weight:500;padding:6px 13px;border-radius:7px;
+  border:1px solid var(--rule);background:var(--card);color:var(--ink);cursor:pointer}
+button:hover{border-color:var(--accent);color:var(--accent-ink)}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+button.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+button.primary:hover{background:var(--accent-ink);color:#fff}
+.intro{border:1px solid var(--rule);border-radius:12px;padding:20px 22px;background:var(--card);
+  box-shadow:var(--shadow);margin-bottom:30px}
+.intro p{margin:.55rem 0;color:var(--ink-2);font-size:.94rem;max-width:62ch}
+.intro strong{color:var(--ink)}
+.item{border:1px solid var(--rule);border-radius:12px;background:var(--card);
+  padding:18px 20px 16px;margin-bottom:14px;box-shadow:var(--shadow);scroll-margin-top:74px}
+.item.done{border-color:var(--accent-soft)}
+.item-head{display:flex;gap:10px;align-items:baseline;margin-bottom:9px}
+.idx{font-family:"IBM Plex Mono",monospace;font-size:.78rem;color:var(--ink-3);
+  font-variant-numeric:tabular-nums}
+.utt{font-family:"IBM Plex Serif",Georgia,serif;font-size:1.12rem;font-style:italic;
+  color:var(--ink);line-height:1.4}
+.opts{display:flex;flex-direction:column;gap:6px;margin-top:12px}
+.opt{display:flex;gap:11px;align-items:flex-start;padding:9px 12px;border:1px solid var(--rule-2);
+  border-radius:9px;cursor:pointer;background:transparent;text-align:left;width:100%;
+  font-size:.94rem;line-height:1.45;color:var(--ink-2);transition:background .12s,border-color .12s}
+.opt:hover{background:var(--rule-2);border-color:var(--rule)}
+.opt .k{font-family:"IBM Plex Mono",monospace;font-size:.78rem;color:var(--ink-3);
+  min-width:1.1em;padding-top:.13em}
+.opt .room{color:var(--ink-3);font-size:.84rem}
+.opt[aria-pressed=true]{background:var(--accent-soft);border-color:var(--accent);color:var(--ink)}
+.opt[aria-pressed=true] .k{color:var(--accent-ink);font-weight:500}
+.opt.unsure[aria-pressed=true]{background:var(--unsure-soft);border-color:var(--unsure)}
+.opt.unsure[aria-pressed=true] .k{color:var(--unsure)}
+.export{border:1px solid var(--rule);border-radius:12px;padding:20px 22px;background:var(--card);
+  box-shadow:var(--shadow);margin-top:28px}
+textarea{width:100%;min-height:120px;font-family:"IBM Plex Mono",monospace;font-size:.76rem;
+  padding:11px;border:1px solid var(--rule);border-radius:9px;background:var(--paper);
+  color:var(--ink-2);resize:vertical;line-height:1.5}
+.row{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.note{font-size:.82rem;color:var(--ink-3);margin-top:9px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (max-width:560px){.bar-in{gap:9px}input[type=text]{width:110px}}
+</style>
+<div class="bar"><div class="bar-in">
+<span class="count" id="count">0 / 60</span>
+<span class="track"><span class="fill" id="fill"></span></span>
+<input type="text" id="who" placeholder="your name" aria-label="Annotator name">
+<button id="jump">Next unanswered</button>
+</div></div>
+<div class="wrap">
+<div class="eyebrow">CogniWatt &middot; ground-truth audit</div>
+<h1>Which one did they mean?</h1>
+<div class="intro">
+<p>Someone speaks the sentence in italics. Four objects in the house could match it. <strong>Pick the one a person would actually mean.</strong></p>
+<p>Answer from the text alone &mdash; there is no trick and no outside knowledge needed. If you genuinely cannot choose, press <strong>Can't tell</strong>. That is a useful answer, not a failure: it is evidence the item is ambiguous, which is exactly what this audit is for.</p>
+<p>60 items, about 40 minutes. Your answers save in this browser as you go, so you can close the tab and come back. <strong>Please don't discuss items with the other annotators until everyone has finished.</strong> When you're done, copy the result block at the bottom and send it back.</p>
+</div>
+<div class="item" id="i1" data-n="1">
+<div class="item-head"><span class="idx">01</span><span class="utt">&ldquo;put the mug on the shelf&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="1" data-v="0"><span class="k">0</span><span>a mug already sitting inside the cupboard <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="1" data-v="1"><span class="k">1</span><span>a mug on the kitchen counter, half full of coffee <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="1" data-v="2"><span class="k">2</span><span>a mug lined up with the others on the shelf <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="1" data-v="3"><span class="k">3</span><span>a mug hanging on its hook above the counter <span class="room">&middot; kitchen</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="1" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i2" data-n="2">
+<div class="item-head"><span class="idx">02</span><span class="utt">&ldquo;put the mug in the drawer&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="2" data-v="0"><span class="k">0</span><span>a mug, tall, with a wide flared rim <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="2" data-v="1"><span class="k">1</span><span>a mug in a padded travel sleeve twice its width <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="2" data-v="2"><span class="k">2</span><span>a mug, squat and handleless, that clears the drawer lip <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="2" data-v="3"><span class="k">3</span><span>a mug with a broad saucer fused to its base <span class="room">&middot; kitchen</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="2" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i3" data-n="3">
+<div class="item-head"><span class="idx">03</span><span class="utt">&ldquo;put the mug in the sink&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="3" data-v="0"><span class="k">0</span><span>a mug pushed aside, drained, a dried ring inside <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="3" data-v="1"><span class="k">1</span><span>a mug someone is still drinking from at the table <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="3" data-v="2"><span class="k">2</span><span>a mug with a teabag brewing under a saucer <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="3" data-v="3"><span class="k">3</span><span>a mug steaming, just poured, on the desk <span class="room">&middot; bedroom</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="3" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i4" data-n="4">
+<div class="item-head"><span class="idx">04</span><span class="utt">&ldquo;put the mug on the shelf&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="4" data-v="0"><span class="k">0</span><span>a mug the guest brought and is taking home <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="4" data-v="1"><span class="k">1</span><span>a mug kept on the child's own tray <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="4" data-v="2"><span class="k">2</span><span>a mug from the shared kitchen cupboard <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="4" data-v="3"><span class="k">3</span><span>a mug with a housemate's name painted across it <span class="room">&middot; kitchen</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="4" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i5" data-n="5">
+<div class="item-head"><span class="idx">05</span><span class="utt">&ldquo;put the mug in the sink&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="5" data-v="0"><span class="k">0</span><span>a mug still warm, set down a moment ago <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="5" data-v="1"><span class="k">1</span><span>a mug kept in the cabinet for visitors <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="5" data-v="2"><span class="k">2</span><span>a mug that has stood on the shelf all week <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="5" data-v="3"><span class="k">3</span><span>a mug unpacked this morning and never filled <span class="room">&middot; kitchen</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="5" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i6" data-n="6">
+<div class="item-head"><span class="idx">06</span><span class="utt">&ldquo;put the mug on the table&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="6" data-v="0"><span class="k">0</span><span>a mug two rooms away on the bedroom windowsill <span class="room">&middot; bedroom</span></span></button>
+<button class="opt" aria-pressed="false" data-n="6" data-v="1"><span class="k">1</span><span>a mug left by the sofa in the next room <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="6" data-v="2"><span class="k">2</span><span>a mug at the far end of the hallway shelf <span class="room">&middot; hallway</span></span></button>
+<button class="opt" aria-pressed="false" data-n="6" data-v="3"><span class="k">3</span><span>a mug on the chair pulled up to the table <span class="room">&middot; kitchen</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="6" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i7" data-n="7">
+<div class="item-head"><span class="idx">07</span><span class="utt">&ldquo;put the mug in the bin&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="7" data-v="0"><span class="k">0</span><span>a mug with a clean break through the handle <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="7" data-v="1"><span class="k">1</span><span>a mug with a faded print and no damage <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="7" data-v="2"><span class="k">2</span><span>a mug stained inside but perfectly sound <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="7" data-v="3"><span class="k">3</span><span>a mug chipped slightly at the rim but usable <span class="room">&middot; kitchen</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="7" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i8" data-n="8">
+<div class="item-head"><span class="idx">08</span><span class="utt">&ldquo;put the mug on the shelf&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="8" data-v="0"><span class="k">0</span><span>a mug used to scoop dry cat food <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="8" data-v="1"><span class="k">1</span><span>a mug with a seedling growing in it <span class="room">&middot; hallway</span></span></button>
+<button class="opt" aria-pressed="false" data-n="8" data-v="2"><span class="k">2</span><span>a mug that came with the dinner set <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="8" data-v="3"><span class="k">3</span><span>a mug holding pens on the desk <span class="room">&middot; bedroom</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="8" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i9" data-n="9">
+<div class="item-head"><span class="idx">09</span><span class="utt">&ldquo;put the mug in the drawer&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="9" data-v="0"><span class="k">0</span><span>a mug from the everyday set, in the rack <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="9" data-v="1"><span class="k">1</span><span>a mug set aside for the charity box <span class="room">&middot; hallway</span></span></button>
+<button class="opt" aria-pressed="false" data-n="9" data-v="2"><span class="k">2</span><span>a mug kept out for the morning routine <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="9" data-v="3"><span class="k">3</span><span>a mug the landlord asked to be left out <span class="room">&middot; kitchen</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="9" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i10" data-n="10">
+<div class="item-head"><span class="idx">10</span><span class="utt">&ldquo;put the mug on the shelf&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="10" data-v="0"><span class="k">0</span><span>a mug belonging to the espresso tray <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="10" data-v="1"><span class="k">1</span><span>a mug from the mismatched camping set <span class="room">&middot; hallway</span></span></button>
+<button class="opt" aria-pressed="false" data-n="10" data-v="2"><span class="k">2</span><span>a mug matching the four already lined up on the shelf <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="10" data-v="3"><span class="k">3</span><span>a mug that lives on the bedside table <span class="room">&middot; bedroom</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="10" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i11" data-n="11">
+<div class="item-head"><span class="idx">11</span><span class="utt">&ldquo;put the book on the shelf&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="11" data-v="0"><span class="k">0</span><span>a book left face-down on the arm of the sofa <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="11" data-v="1"><span class="k">1</span><span>a book slotted into the bookcase spine-out <span class="room">&middot; bedroom</span></span></button>
+<button class="opt" aria-pressed="false" data-n="11" data-v="2"><span class="k">2</span><span>a book filed in the shelving unit with the atlases <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="11" data-v="3"><span class="k">3</span><span>a book already standing upright on the shelf <span class="room">&middot; living room</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="11" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i12" data-n="12">
+<div class="item-head"><span class="idx">12</span><span class="utt">&ldquo;put the book in the sink&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="12" data-v="0"><span class="k">0</span><span>a book with a soft paper cover <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="12" data-v="1"><span class="k">1</span><span>a book of laminated recipe cards, splashed with sauce <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="12" data-v="2"><span class="k">2</span><span>a book with gilt edges and a cloth spine <span class="room">&middot; bedroom</span></span></button>
+<button class="opt" aria-pressed="false" data-n="12" data-v="3"><span class="k">3</span><span>a book of loose photographs in sleeves <span class="room">&middot; living room</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="12" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i13" data-n="13">
+<div class="item-head"><span class="idx">13</span><span class="utt">&ldquo;put the book in the drawer&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="13" data-v="0"><span class="k">0</span><span>a book held open with notes being copied out <span class="room">&middot; bedroom</span></span></button>
+<button class="opt" aria-pressed="false" data-n="13" data-v="1"><span class="k">1</span><span>a book finished last month, the bookmark taken out <span class="room">&middot; bedroom</span></span></button>
+<button class="opt" aria-pressed="false" data-n="13" data-v="2"><span class="k">2</span><span>a book someone is reading right now on the sofa <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="13" data-v="3"><span class="k">3</span><span>a book propped on the stand for tonight's recipe <span class="room">&middot; kitchen</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="13" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i14" data-n="14">
+<div class="item-head"><span class="idx">14</span><span class="utt">&ldquo;put the book on the shelf&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="14" data-v="0"><span class="k">0</span><span>a book the visitor left with a train ticket in it <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="14" data-v="1"><span class="k">1</span><span>a book borrowed from a neighbour, to go back <span class="room">&middot; hallway</span></span></button>
+<button class="opt" aria-pressed="false" data-n="14" data-v="2"><span class="k">2</span><span>a book that belongs to the house <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="14" data-v="3"><span class="k">3</span><span>a book with a library return slip tucked in <span class="room">&middot; hallway</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="14" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i15" data-n="15">
+<div class="item-head"><span class="idx">15</span><span class="utt">&ldquo;put the book on the table&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="15" data-v="0"><span class="k">0</span><span>a book that has sat in the hall for months <span class="room">&middot; hallway</span></span></button>
+<button class="opt" aria-pressed="false" data-n="15" data-v="1"><span class="k">1</span><span>a book set down mid-chapter a minute ago <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="15" data-v="2"><span class="k">2</span><span>a book still in its delivery wrapper <span class="room">&middot; hallway</span></span></button>
+<button class="opt" aria-pressed="false" data-n="15" data-v="3"><span class="k">3</span><span>a book stored flat under the bed <span class="room">&middot; bedroom</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="15" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i16" data-n="16">
+<div class="item-head"><span class="idx">16</span><span class="utt">&ldquo;put the book in the drawer&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="16" data-v="0"><span class="k">0</span><span>a book resting on top of the chest of drawers <span class="room">&middot; bedroom</span></span></button>
+<button class="opt" aria-pressed="false" data-n="16" data-v="1"><span class="k">1</span><span>a book on the hallway windowsill by the door <span class="room">&middot; hallway</span></span></button>
+<button class="opt" aria-pressed="false" data-n="16" data-v="2"><span class="k">2</span><span>a book two rooms away on the kitchen counter <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="16" data-v="3"><span class="k">3</span><span>a book down the side of the sofa <span class="room">&middot; living room</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="16" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i17" data-n="17">
+<div class="item-head"><span class="idx">17</span><span class="utt">&ldquo;put the book in the bin&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="17" data-v="0"><span class="k">0</span><span>a book water-damaged and swollen shut <span class="room">&middot; hallway</span></span></button>
+<button class="opt" aria-pressed="false" data-n="17" data-v="1"><span class="k">1</span><span>a book with a creased cover but readable <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="17" data-v="2"><span class="k">2</span><span>a book with its spine intact, borrowed from the library <span class="room">&middot; bedroom</span></span></button>
+<button class="opt" aria-pressed="false" data-n="17" data-v="3"><span class="k">3</span><span>a book missing only its dust jacket <span class="room">&middot; living room</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="17" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i18" data-n="18">
+<div class="item-head"><span class="idx">18</span><span class="utt">&ldquo;put the book on the table&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="18" data-v="0"><span class="k">0</span><span>a book of takeaway menus <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="18" data-v="1"><span class="k">1</span><span>a book of baby photographs <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="18" data-v="2"><span class="k">2</span><span>a book of pressed flowers, fragile <span class="room">&middot; bedroom</span></span></button>
+<button class="opt" aria-pressed="false" data-n="18" data-v="3"><span class="k">3</span><span>a book of tax records in a ring binder <span class="room">&middot; bedroom</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="18" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i19" data-n="19">
+<div class="item-head"><span class="idx">19</span><span class="utt">&ldquo;put the book in the bin&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="19" data-v="0"><span class="k">0</span><span>a book signed by its author <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="19" data-v="1"><span class="k">1</span><span>a book still under a reading-group deadline <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="19" data-v="2"><span class="k">2</span><span>a book of expired coupons from two years ago <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="19" data-v="3"><span class="k">3</span><span>a book that came with the flat's inventory <span class="room">&middot; hallway</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="19" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i20" data-n="20">
+<div class="item-head"><span class="idx">20</span><span class="utt">&ldquo;put the book on the shelf&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="20" data-v="0"><span class="k">0</span><span>a book of road maps kept in the car <span class="room">&middot; hallway</span></span></button>
+<button class="opt" aria-pressed="false" data-n="20" data-v="1"><span class="k">1</span><span>a book matching the numbered series already on the shelf <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="20" data-v="2"><span class="k">2</span><span>a book from the pile of magazines <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="20" data-v="3"><span class="k">3</span><span>a book of children's stories kept in the nursery <span class="room">&middot; bedroom</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="20" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i21" data-n="21">
+<div class="item-head"><span class="idx">21</span><span class="utt">&ldquo;put the bottle in the bin&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="21" data-v="0"><span class="k">0</span><span>a bottle crushed flat in the waste caddy <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="21" data-v="1"><span class="k">1</span><span>a bottle already dropped in the recycling <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="21" data-v="2"><span class="k">2</span><span>a bottle, drained, standing on the desk <span class="room">&middot; bedroom</span></span></button>
+<button class="opt" aria-pressed="false" data-n="21" data-v="3"><span class="k">3</span><span>a bottle sitting in the bin bag by the door <span class="room">&middot; hallway</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="21" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i22" data-n="22">
+<div class="item-head"><span class="idx">22</span><span class="utt">&ldquo;put the bottle on the shelf&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="22" data-v="0"><span class="k">0</span><span>a bottle that must be refrigerated once opened <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="22" data-v="1"><span class="k">1</span><span>a bottle of oil that keeps at room temperature <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="22" data-v="2"><span class="k">2</span><span>a bottle of yeast starter that has to stay cold <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="22" data-v="3"><span class="k">3</span><span>a bottle of milk already sweating in the warm <span class="room">&middot; kitchen</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="22" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i23" data-n="23">
+<div class="item-head"><span class="idx">23</span><span class="utt">&ldquo;put the bottle in the sink&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="23" data-v="0"><span class="k">0</span><span>a bottle filled and capped for the school run <span class="room">&middot; hallway</span></span></button>
+<button class="opt" aria-pressed="false" data-n="23" data-v="1"><span class="k">1</span><span>a bottle half poured into a jug and still needed <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="23" data-v="2"><span class="k">2</span><span>a bottle emptied, crusted with dried smoothie <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="23" data-v="3"><span class="k">3</span><span>a bottle someone is drinking from on the sofa <span class="room">&middot; living room</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="23" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i24" data-n="24">
+<div class="item-head"><span class="idx">24</span><span class="utt">&ldquo;put the bottle in the drawer&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="24" data-v="0"><span class="k">0</span><span>a bottle the guest brought as a gift <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="24" data-v="1"><span class="k">1</span><span>a bottle from the household spares <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="24" data-v="2"><span class="k">2</span><span>a bottle of someone's prescription drops <span class="room">&middot; bedroom</span></span></button>
+<button class="opt" aria-pressed="false" data-n="24" data-v="3"><span class="k">3</span><span>a bottle labelled for the baby's feeds <span class="room">&middot; kitchen</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="24" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i25" data-n="25">
+<div class="item-head"><span class="idx">25</span><span class="utt">&ldquo;put the bottle in the bin&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="25" data-v="0"><span class="k">0</span><span>a bottle still cold from the fridge <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="25" data-v="1"><span class="k">1</span><span>a bottle finished a moment ago, cap on the side <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="25" data-v="2"><span class="k">2</span><span>a bottle kept refilled for the plants <span class="room">&middot; hallway</span></span></button>
+<button class="opt" aria-pressed="false" data-n="25" data-v="3"><span class="k">3</span><span>a bottle unopened at the back of the cupboard <span class="room">&middot; kitchen</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="25" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i26" data-n="26">
+<div class="item-head"><span class="idx">26</span><span class="utt">&ldquo;put the bottle in the sink&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="26" data-v="0"><span class="k">0</span><span>a bottle behind the sofa in the next room <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="26" data-v="1"><span class="k">1</span><span>a bottle at the far end of the hall <span class="room">&middot; hallway</span></span></button>
+<button class="opt" aria-pressed="false" data-n="26" data-v="2"><span class="k">2</span><span>a bottle on the bedroom windowsill upstairs <span class="room">&middot; bedroom</span></span></button>
+<button class="opt" aria-pressed="false" data-n="26" data-v="3"><span class="k">3</span><span>a bottle standing on the draining board beside the tap <span class="room">&middot; kitchen</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="26" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i27" data-n="27">
+<div class="item-head"><span class="idx">27</span><span class="utt">&ldquo;put the bottle in the sink&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="27" data-v="0"><span class="k">0</span><span>a bottle rinsed clean and drying upside down <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="27" data-v="1"><span class="k">1</span><span>a bottle sealed and untouched in its wrapper <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="27" data-v="2"><span class="k">2</span><span>a bottle with sour milk congealed in the neck <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="27" data-v="3"><span class="k">3</span><span>a bottle wiped down and back in the fridge door <span class="room">&middot; kitchen</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="27" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i28" data-n="28">
+<div class="item-head"><span class="idx">28</span><span class="utt">&ldquo;put the bottle on the table&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="28" data-v="0"><span class="k">0</span><span>a bottle of turpentine from the cupboard <span class="room">&middot; hallway</span></span></button>
+<button class="opt" aria-pressed="false" data-n="28" data-v="1"><span class="k">1</span><span>a bottle of sparkling water, chilled <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="28" data-v="2"><span class="k">2</span><span>a bottle of washing-up liquid by the tap <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="28" data-v="3"><span class="k">3</span><span>a bottle of engine oil from the garage shelf <span class="room">&middot; hallway</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="28" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i29" data-n="29">
+<div class="item-head"><span class="idx">29</span><span class="utt">&ldquo;put the bottle on the shelf&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="29" data-v="0"><span class="k">0</span><span>a bottle promised to the neighbour tomorrow <span class="room">&middot; hallway</span></span></button>
+<button class="opt" aria-pressed="false" data-n="29" data-v="1"><span class="k">1</span><span>a bottle of cordial from the back of the cupboard <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="29" data-v="2"><span class="k">2</span><span>a bottle being kept chilled for tonight <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="29" data-v="3"><span class="k">3</span><span>a bottle set aside for the recycling run <span class="room">&middot; hallway</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="29" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i30" data-n="30">
+<div class="item-head"><span class="idx">30</span><span class="utt">&ldquo;put the bottle in the drawer&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="30" data-v="0"><span class="k">0</span><span>a bottle of bleach kept high up <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="30" data-v="1"><span class="k">1</span><span>a bottle of tablets matching the others in the medicine drawer <span class="room">&middot; bedroom</span></span></button>
+<button class="opt" aria-pressed="false" data-n="30" data-v="2"><span class="k">2</span><span>a bottle of wine from the rack <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="30" data-v="3"><span class="k">3</span><span>a bottle of squash from the drinks crate <span class="room">&middot; kitchen</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="30" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i31" data-n="31">
+<div class="item-head"><span class="idx">31</span><span class="utt">&ldquo;put the bowl in the sink&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="31" data-v="0"><span class="k">0</span><span>a bowl with cereal dregs drying on the table <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="31" data-v="1"><span class="k">1</span><span>a bowl stacked in the washing-up water <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="31" data-v="2"><span class="k">2</span><span>a bowl sitting in the sink waiting its turn <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="31" data-v="3"><span class="k">3</span><span>a bowl already soaking under the tap <span class="room">&middot; kitchen</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="31" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i32" data-n="32">
+<div class="item-head"><span class="idx">32</span><span class="utt">&ldquo;put the bowl on the shelf&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="32" data-v="0"><span class="k">0</span><span>a bowl light enough to lift onto the high shelf <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="32" data-v="1"><span class="k">1</span><span>a bowl too tall to stand under that shelf <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="32" data-v="2"><span class="k">2</span><span>a bowl of cast iron, too heavy to lift overhead <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="32" data-v="3"><span class="k">3</span><span>a bowl with a cracked base that would not sit flat <span class="room">&middot; kitchen</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="32" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i33" data-n="33">
+<div class="item-head"><span class="idx">33</span><span class="utt">&ldquo;put the bowl in the drawer&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="33" data-v="0"><span class="k">0</span><span>a bowl with dough rising under a cloth <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="33" data-v="1"><span class="k">1</span><span>a bowl catching a drip under the pipe <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="33" data-v="2"><span class="k">2</span><span>a bowl washed and dried on the rack <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="33" data-v="3"><span class="k">3</span><span>a bowl of batter resting for later <span class="room">&middot; kitchen</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="33" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i34" data-n="34">
+<div class="item-head"><span class="idx">34</span><span class="utt">&ldquo;put the bowl on the table&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="34" data-v="0"><span class="k">0</span><span>a bowl on loan from next door <span class="room">&middot; hallway</span></span></button>
+<button class="opt" aria-pressed="false" data-n="34" data-v="1"><span class="k">1</span><span>a bowl from the shared cupboard <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="34" data-v="2"><span class="k">2</span><span>a bowl the guest brought their salad in <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="34" data-v="3"><span class="k">3</span><span>a bowl the child decorated and keeps for themselves <span class="room">&middot; bedroom</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="34" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i35" data-n="35">
+<div class="item-head"><span class="idx">35</span><span class="utt">&ldquo;put the bowl on the table&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="35" data-v="0"><span class="k">0</span><span>a bowl that has been in the cupboard since spring <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="35" data-v="1"><span class="k">1</span><span>a bowl put away clean last night <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="35" data-v="2"><span class="k">2</span><span>a bowl unpacked from the move and never used <span class="room">&middot; hallway</span></span></button>
+<button class="opt" aria-pressed="false" data-n="35" data-v="3"><span class="k">3</span><span>a bowl just filled with soup, still steaming <span class="room">&middot; kitchen</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="35" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i36" data-n="36">
+<div class="item-head"><span class="idx">36</span><span class="utt">&ldquo;put the bowl in the bin&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="36" data-v="0"><span class="k">0</span><span>a bowl of scrapings standing right next to the bin <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="36" data-v="1"><span class="k">1</span><span>a bowl left in the hallway by the coats <span class="room">&middot; hallway</span></span></button>
+<button class="opt" aria-pressed="false" data-n="36" data-v="2"><span class="k">2</span><span>a bowl on the far side of the living room <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="36" data-v="3"><span class="k">3</span><span>a bowl of scrapings up in the bedroom <span class="room">&middot; bedroom</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="36" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i37" data-n="37">
+<div class="item-head"><span class="idx">37</span><span class="utt">&ldquo;put the bowl in the bin&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="37" data-v="0"><span class="k">0</span><span>a bowl of apples bought yesterday <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="37" data-v="1"><span class="k">1</span><span>a bowl of nuts still in their shells <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="37" data-v="2"><span class="k">2</span><span>a bowl of clementines, all firm <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="37" data-v="3"><span class="k">3</span><span>a bowl holding fruit gone soft and brown <span class="room">&middot; kitchen</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="37" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i38" data-n="38">
+<div class="item-head"><span class="idx">38</span><span class="utt">&ldquo;put the bowl on the table&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="38" data-v="0"><span class="k">0</span><span>a bowl of salad, dressed and ready <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="38" data-v="1"><span class="k">1</span><span>a bowl of loose screws from the toolbox <span class="room">&middot; hallway</span></span></button>
+<button class="opt" aria-pressed="false" data-n="38" data-v="2"><span class="k">2</span><span>a bowl of cat biscuits <span class="room">&middot; hallway</span></span></button>
+<button class="opt" aria-pressed="false" data-n="38" data-v="3"><span class="k">3</span><span>a bowl of soil with cuttings taking root <span class="room">&middot; living room</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="38" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i39" data-n="39">
+<div class="item-head"><span class="idx">39</span><span class="utt">&ldquo;put the bowl in the drawer&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="39" data-v="0"><span class="k">0</span><span>a bowl from the everyday stack <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="39" data-v="1"><span class="k">1</span><span>a bowl set out to catch the leak <span class="room">&middot; hallway</span></span></button>
+<button class="opt" aria-pressed="false" data-n="39" data-v="2"><span class="k">2</span><span>a bowl needed for tomorrow's baking <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="39" data-v="3"><span class="k">3</span><span>a bowl reserved for the party at the weekend <span class="room">&middot; living room</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="39" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i40" data-n="40">
+<div class="item-head"><span class="idx">40</span><span class="utt">&ldquo;put the bowl on the shelf&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="40" data-v="0"><span class="k">0</span><span>a bowl that lives on the dressing table <span class="room">&middot; bedroom</span></span></button>
+<button class="opt" aria-pressed="false" data-n="40" data-v="1"><span class="k">1</span><span>a bowl from the mixing set in the cupboard <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="40" data-v="2"><span class="k">2</span><span>a bowl from the picnic basket <span class="room">&middot; hallway</span></span></button>
+<button class="opt" aria-pressed="false" data-n="40" data-v="3"><span class="k">3</span><span>a bowl matching the four already stacked on the shelf <span class="room">&middot; kitchen</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="40" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i41" data-n="41">
+<div class="item-head"><span class="idx">41</span><span class="utt">&ldquo;put the remote in the drawer&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="41" data-v="0"><span class="k">0</span><span>a remote zipped into the console bag <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="41" data-v="1"><span class="k">1</span><span>a remote already lying in the open drawer <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="41" data-v="2"><span class="k">2</span><span>a remote face down on the sofa cushion <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="41" data-v="3"><span class="k">3</span><span>a remote clipped into its holder in the cabinet <span class="room">&middot; living room</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="41" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i42" data-n="42">
+<div class="item-head"><span class="idx">42</span><span class="utt">&ldquo;put the remote on the table&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="42" data-v="0"><span class="k">0</span><span>a remote for a player that was sold years ago <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="42" data-v="1"><span class="k">1</span><span>a remote whose buttons no longer respond <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="42" data-v="2"><span class="k">2</span><span>a remote that works the television <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="42" data-v="3"><span class="k">3</span><span>a remote with no batteries and the cover missing <span class="room">&middot; living room</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="42" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i43" data-n="43">
+<div class="item-head"><span class="idx">43</span><span class="utt">&ldquo;put the remote in the drawer&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="43" data-v="0"><span class="k">0</span><span>a remote for the old player nobody uses <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="43" data-v="1"><span class="k">1</span><span>a remote set to a timer that is counting down <span class="room">&middot; bedroom</span></span></button>
+<button class="opt" aria-pressed="false" data-n="43" data-v="2"><span class="k">2</span><span>a remote in someone's hand, mid-programme <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="43" data-v="3"><span class="k">3</span><span>a remote paired to the speaker currently playing <span class="room">&middot; living room</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="43" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i44" data-n="44">
+<div class="item-head"><span class="idx">44</span><span class="utt">&ldquo;put the remote on the shelf&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="44" data-v="0"><span class="k">0</span><span>a remote belonging to the living-room set <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="44" data-v="1"><span class="k">1</span><span>a remote the landlord left with the inventory <span class="room">&middot; hallway</span></span></button>
+<button class="opt" aria-pressed="false" data-n="44" data-v="2"><span class="k">2</span><span>a remote from a car the household no longer owns <span class="room">&middot; bedroom</span></span></button>
+<button class="opt" aria-pressed="false" data-n="44" data-v="3"><span class="k">3</span><span>a remote from the neighbour's projector, to return <span class="room">&middot; hallway</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="44" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i45" data-n="45">
+<div class="item-head"><span class="idx">45</span><span class="utt">&ldquo;put the remote on the table&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="45" data-v="0"><span class="k">0</span><span>a remote still in its factory bag <span class="room">&middot; hallway</span></span></button>
+<button class="opt" aria-pressed="false" data-n="45" data-v="1"><span class="k">1</span><span>a remote set down on the sofa a moment ago <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="45" data-v="2"><span class="k">2</span><span>a remote kept in the drawer since the move <span class="room">&middot; bedroom</span></span></button>
+<button class="opt" aria-pressed="false" data-n="45" data-v="3"><span class="k">3</span><span>a remote taped inside the cabinet as a spare <span class="room">&middot; living room</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="45" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i46" data-n="46">
+<div class="item-head"><span class="idx">46</span><span class="utt">&ldquo;put the remote on the table&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="46" data-v="0"><span class="k">0</span><span>a remote in the kitchen by the radio <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="46" data-v="1"><span class="k">1</span><span>a remote in the bedroom upstairs <span class="room">&middot; bedroom</span></span></button>
+<button class="opt" aria-pressed="false" data-n="46" data-v="2"><span class="k">2</span><span>a remote on the arm of the chair pulled up to the table <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="46" data-v="3"><span class="k">3</span><span>a remote at the far end of the hall shelf <span class="room">&middot; hallway</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="46" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i47" data-n="47">
+<div class="item-head"><span class="idx">47</span><span class="utt">&ldquo;put the remote in the bin&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="47" data-v="0"><span class="k">0</span><span>a remote leaking corrosion from the battery bay <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="47" data-v="1"><span class="k">1</span><span>a remote missing only its battery cover <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="47" data-v="2"><span class="k">2</span><span>a remote that has simply lost its pairing <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="47" data-v="3"><span class="k">3</span><span>a remote with one sticky button <span class="room">&middot; living room</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="47" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i48" data-n="48">
+<div class="item-head"><span class="idx">48</span><span class="utt">&ldquo;put the remote in the drawer&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="48" data-v="0"><span class="k">0</span><span>a remote for the bedside lamp <span class="room">&middot; bedroom</span></span></button>
+<button class="opt" aria-pressed="false" data-n="48" data-v="1"><span class="k">1</span><span>a remote used every evening for the television <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="48" data-v="2"><span class="k">2</span><span>a remote used once a year for the projector <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="48" data-v="3"><span class="k">3</span><span>a remote that opens the garage door on the way out <span class="room">&middot; hallway</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="48" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i49" data-n="49">
+<div class="item-head"><span class="idx">49</span><span class="utt">&ldquo;put the remote on the shelf&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="49" data-v="0"><span class="k">0</span><span>a remote for the spare set-top box in the cupboard <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="49" data-v="1"><span class="k">1</span><span>a remote promised to the neighbour <span class="room">&middot; hallway</span></span></button>
+<button class="opt" aria-pressed="false" data-n="49" data-v="2"><span class="k">2</span><span>a remote set aside for electrical recycling <span class="room">&middot; hallway</span></span></button>
+<button class="opt" aria-pressed="false" data-n="49" data-v="3"><span class="k">3</span><span>a remote needed for the film later <span class="room">&middot; living room</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="49" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i50" data-n="50">
+<div class="item-head"><span class="idx">50</span><span class="utt">&ldquo;put the remote in the drawer&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="50" data-v="0"><span class="k">0</span><span>a remote from the car keys tray <span class="room">&middot; hallway</span></span></button>
+<button class="opt" aria-pressed="false" data-n="50" data-v="1"><span class="k">1</span><span>a remote kept taped to the bedhead <span class="room">&middot; bedroom</span></span></button>
+<button class="opt" aria-pressed="false" data-n="50" data-v="2"><span class="k">2</span><span>a remote that lives on the kitchen radio <span class="room">&middot; kitchen</span></span></button>
+<button class="opt" aria-pressed="false" data-n="50" data-v="3"><span class="k">3</span><span>a remote matching the others already in the drawer <span class="room">&middot; living room</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="50" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i51" data-n="51">
+<div class="item-head"><span class="idx">51</span><span class="utt">&ldquo;put the cushion on the shelf&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="51" data-v="0"><span class="k">0</span><span>a cushion already stacked on the shelf <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="51" data-v="1"><span class="k">1</span><span>a cushion zipped into the storage bag <span class="room">&middot; bedroom</span></span></button>
+<button class="opt" aria-pressed="false" data-n="51" data-v="2"><span class="k">2</span><span>a cushion on the floor beside the front door <span class="room">&middot; hallway</span></span></button>
+<button class="opt" aria-pressed="false" data-n="51" data-v="3"><span class="k">3</span><span>a cushion squared up at the end of the sofa <span class="room">&middot; living room</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="51" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i52" data-n="52">
+<div class="item-head"><span class="idx">52</span><span class="utt">&ldquo;put the cushion on the table&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="52" data-v="0"><span class="k">0</span><span>a cushion the length of the window seat <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="52" data-v="1"><span class="k">1</span><span>a cushion, small, used as a laptop rest <span class="room">&middot; bedroom</span></span></button>
+<button class="opt" aria-pressed="false" data-n="52" data-v="2"><span class="k">2</span><span>a cushion in a bulky quilted cover <span class="room">&middot; bedroom</span></span></button>
+<button class="opt" aria-pressed="false" data-n="52" data-v="3"><span class="k">3</span><span>a cushion, full size, from the sofa <span class="room">&middot; living room</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="52" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i53" data-n="53">
+<div class="item-head"><span class="idx">53</span><span class="utt">&ldquo;put the cushion in the drawer&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="53" data-v="0"><span class="k">0</span><span>a cushion under the sleeping baby's head <span class="room">&middot; bedroom</span></span></button>
+<button class="opt" aria-pressed="false" data-n="53" data-v="1"><span class="k">1</span><span>a cushion with the cat asleep on it <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="53" data-v="2"><span class="k">2</span><span>a cushion fallen down behind the armchair <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="53" data-v="3"><span class="k">3</span><span>a cushion propped behind someone's back <span class="room">&middot; living room</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="53" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i54" data-n="54">
+<div class="item-head"><span class="idx">54</span><span class="utt">&ldquo;put the cushion in the drawer&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="54" data-v="0"><span class="k">0</span><span>a cushion the dog sleeps on <span class="room">&middot; hallway</span></span></button>
+<button class="opt" aria-pressed="false" data-n="54" data-v="1"><span class="k">1</span><span>a cushion from the spare throw set <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="54" data-v="2"><span class="k">2</span><span>a cushion from the baby's cot <span class="room">&middot; bedroom</span></span></button>
+<button class="opt" aria-pressed="false" data-n="54" data-v="3"><span class="k">3</span><span>a cushion the guest brought for their back <span class="room">&middot; living room</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="54" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i55" data-n="55">
+<div class="item-head"><span class="idx">55</span><span class="utt">&ldquo;put the cushion on the shelf&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="55" data-v="0"><span class="k">0</span><span>a cushion pulled off the sofa a minute ago <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="55" data-v="1"><span class="k">1</span><span>a cushion stored flat since the summer <span class="room">&middot; bedroom</span></span></button>
+<button class="opt" aria-pressed="false" data-n="55" data-v="2"><span class="k">2</span><span>a cushion still in its shop wrapping <span class="room">&middot; bedroom</span></span></button>
+<button class="opt" aria-pressed="false" data-n="55" data-v="3"><span class="k">3</span><span>a cushion that has been in the hall for months <span class="room">&middot; hallway</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="55" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i56" data-n="56">
+<div class="item-head"><span class="idx">56</span><span class="utt">&ldquo;put the cushion on the table&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="56" data-v="0"><span class="k">0</span><span>a cushion at the far end of the hallway <span class="room">&middot; hallway</span></span></button>
+<button class="opt" aria-pressed="false" data-n="56" data-v="1"><span class="k">1</span><span>a cushion behind the sofa in the corner <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="56" data-v="2"><span class="k">2</span><span>a cushion on the chair pushed up to the table <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="56" data-v="3"><span class="k">3</span><span>a cushion in the bedroom two doors along <span class="room">&middot; bedroom</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="56" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i57" data-n="57">
+<div class="item-head"><span class="idx">57</span><span class="utt">&ldquo;put the cushion in the bin&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="57" data-v="0"><span class="k">0</span><span>a cushion with a loose seam, easily sewn <span class="room">&middot; bedroom</span></span></button>
+<button class="opt" aria-pressed="false" data-n="57" data-v="1"><span class="k">1</span><span>a cushion with a stain that washes out <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="57" data-v="2"><span class="k">2</span><span>a cushion split open with the stuffing coming out <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="57" data-v="3"><span class="k">3</span><span>a cushion faded on one side only <span class="room">&middot; bedroom</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="57" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i58" data-n="58">
+<div class="item-head"><span class="idx">58</span><span class="utt">&ldquo;put the cushion in the sink&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="58" data-v="0"><span class="k">0</span><span>a cushion of feather down that must be dry cleaned <span class="room">&middot; bedroom</span></span></button>
+<button class="opt" aria-pressed="false" data-n="58" data-v="1"><span class="k">1</span><span>a cushion glued onto a solid foam base <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="58" data-v="2"><span class="k">2</span><span>a cushion with a washable cover, soaked with juice <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="58" data-v="3"><span class="k">3</span><span>a cushion with an electric heat pad inside <span class="room">&middot; bedroom</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="58" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i59" data-n="59">
+<div class="item-head"><span class="idx">59</span><span class="utt">&ldquo;put the cushion on the shelf&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="59" data-v="0"><span class="k">0</span><span>a cushion promised to the neighbour <span class="room">&middot; hallway</span></span></button>
+<button class="opt" aria-pressed="false" data-n="59" data-v="1"><span class="k">1</span><span>a cushion needed for the guest bed tonight <span class="room">&middot; bedroom</span></span></button>
+<button class="opt" aria-pressed="false" data-n="59" data-v="2"><span class="k">2</span><span>a cushion from the everyday sofa set <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="59" data-v="3"><span class="k">3</span><span>a cushion set aside for the charity bag <span class="room">&middot; hallway</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="59" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="item" id="i60" data-n="60">
+<div class="item-head"><span class="idx">60</span><span class="utt">&ldquo;put the cushion in the drawer&rdquo;</span></div>
+<div class="opts">
+<button class="opt" aria-pressed="false" data-n="60" data-v="0"><span class="k">0</span><span>a cushion from the garden furniture set <span class="room">&middot; hallway</span></span></button>
+<button class="opt" aria-pressed="false" data-n="60" data-v="1"><span class="k">1</span><span>a cushion that lives on the reading chair <span class="room">&middot; living room</span></span></button>
+<button class="opt" aria-pressed="false" data-n="60" data-v="2"><span class="k">2</span><span>a cushion from the car's back seat <span class="room">&middot; hallway</span></span></button>
+<button class="opt" aria-pressed="false" data-n="60" data-v="3"><span class="k">3</span><span>a cushion matching the covers already folded in the drawer <span class="room">&middot; bedroom</span></span></button>
+<button class="opt unsure" aria-pressed="false" data-n="60" data-v="?"><span class="k">?</span><span>Can't tell &mdash; genuinely ambiguous</span></button>
+</div></div>
+<div class="export" id="export">
+<div class="eyebrow">When you are finished</div>
+<h1 style="font-size:1.15rem;margin:.35rem 0 .5rem">Send this back</h1>
+<p class="note" style="margin-top:0">Copy everything in the box and send it to whoever asked you to do this.</p>
+<textarea id="out" readonly aria-label="Result block"></textarea>
+<div class="row">
+<button class="primary" id="copy">Copy result</button>
+<button id="clear">Clear my answers</button>
+<span class="note" id="msg" style="margin:0"></span>
+</div></div></div>
+<script>
+(function(){
+  var KEY='cogniwatt-audit-v1', N=60;
+  var state={who:'',ans:{}};
+  try{var raw=localStorage.getItem(KEY); if(raw) state=Object.assign(state,JSON.parse(raw));}catch(e){}
+  var who=document.getElementById('who'), out=document.getElementById('out'),
+      fill=document.getElementById('fill'), count=document.getElementById('count'),
+      msg=document.getElementById('msg');
+  who.value=state.who||'';
+  function save(){ try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){} }
+  function answered(){ return Object.keys(state.ans).length; }
+  function render(){
+    var n=answered();
+    count.textContent=n+' / '+N;
+    fill.style.width=(n/N*100)+'%';
+    document.querySelectorAll('.opt').forEach(function(b){
+      b.setAttribute('aria-pressed', String(state.ans[b.dataset.n])===b.dataset.v?'true':'false');
+    });
+    document.querySelectorAll('.item').forEach(function(d){
+      d.classList.toggle('done', state.ans[d.dataset.n]!==undefined);
+    });
+    var lines=['# CogniWatt referent audit','annotator: '+(state.who||'(unnamed)'),
+               'answered: '+n+'/'+N,'item\tanswer'];
+    for(var i=1;i<=N;i++) lines.push(i+'\t'+(state.ans[i]!==undefined?state.ans[i]:''));
+    out.value=lines.join('\n');
+  }
+  document.querySelectorAll('.opt').forEach(function(b){
+    b.addEventListener('click',function(){
+      var n=b.dataset.n;
+      if(String(state.ans[n])===b.dataset.v) delete state.ans[n]; else state.ans[n]=b.dataset.v;
+      save(); render();
+    });
+  });
+  who.addEventListener('input',function(){ state.who=who.value; save(); render(); });
+  document.getElementById('jump').addEventListener('click',function(){
+    for(var i=1;i<=N;i++){ if(state.ans[i]===undefined){
+      var el=document.getElementById('i'+i);
+      if(el){el.scrollIntoView({behavior:'smooth',block:'start'});} return; } }
+    document.getElementById('export').scrollIntoView({behavior:'smooth',block:'start'});
+  });
+  document.getElementById('copy').addEventListener('click',function(){
+    out.select(); var ok=false;
+    try{ ok=document.execCommand('copy'); }catch(e){}
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      navigator.clipboard.writeText(out.value).then(function(){msg.textContent='Copied. Send it back.';},
+        function(){msg.textContent=ok?'Copied. Send it back.':'Select the text and copy manually.';});
+    } else { msg.textContent=ok?'Copied. Send it back.':'Select the text and copy manually.'; }
+  });
+  document.getElementById('clear').addEventListener('click',function(){
+    if(!confirm('Clear all '+answered()+' answers? This cannot be undone.')) return;
+    state.ans={}; save(); render(); msg.textContent='Cleared.';
+  });
+  render();
+})();
+</script>
