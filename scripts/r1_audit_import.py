@@ -19,7 +19,8 @@ from __future__ import annotations
 import argparse, json, os, re, sys, pathlib
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parents[1]))
 
-AUDIT_DIR = os.path.join("data", "audit")
+#: Must match scripts/r2_audit.py -- its --report globs this directory.
+from scripts.r2_audit import AUDIT_DIR  # noqa: E402
 
 
 def parse_block(path: str):
