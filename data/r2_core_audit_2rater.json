@@ -1,0 +1,896 @@
+{
+  "annotators_human": [
+    "adit",
+    "annotator2"
+  ],
+  "annotators_model": [],
+  "by_status": {
+    "undecidable": 10,
+    "agree": 39,
+    "disagree": 10,
+    "key_wrong": 1
+  },
+  "agreement": {
+    "n_annotators": 2,
+    "annotators": [
+      "adit",
+      "annotator2"
+    ],
+    "n_fully_rated": 50,
+    "raw_agreement": 0.8,
+    "fleiss_kappa": 0.7218358831710711
+  },
+  "verdicts": {
+    "mug_already": {
+      "status": "undecidable",
+      "n_human": 2,
+      "key_shown_idx": 1,
+      "votes": [
+        3,
+        null
+      ],
+      "wrong_votes": {
+        "3": 1
+      },
+      "family": "already_satisfied",
+      "difficulty": "easy",
+      "model_votes": {},
+      "notes": []
+    },
+    "mug_afford": {
+      "status": "agree",
+      "n_human": 2,
+      "key_shown_idx": 2,
+      "votes": [
+        2,
+        2
+      ],
+      "wrong_votes": {},
+      "family": "affordance",
+      "difficulty": "medium",
+      "model_votes": {},
+      "notes": []
+    },
+    "mug_state": {
+      "status": "agree",
+      "n_human": 2,
+      "key_shown_idx": 0,
+      "votes": [
+        0,
+        0
+      ],
+      "wrong_votes": {},
+      "family": "state_blocks",
+      "difficulty": "medium",
+      "model_votes": {},
+      "notes": []
+    },
+    "mug_own": {
+      "status": "undecidable",
+      "n_human": 2,
+      "key_shown_idx": 2,
+      "votes": [
+        2,
+        null
+      ],
+      "wrong_votes": {},
+      "family": "ownership",
+      "difficulty": "medium",
+      "model_votes": {},
+      "notes": []
+    },
+    "mug_recency": {
+      "status": "undecidable",
+      "n_human": 2,
+      "key_shown_idx": 0,
+      "votes": [
+        0,
+        null
+      ],
+      "wrong_votes": {},
+      "family": "recency",
+      "difficulty": "medium",
+      "model_votes": {},
+      "notes": []
+    },
+    "mug_prox": {
+      "status": "disagree",
+      "n_human": 2,
+      "key_shown_idx": 3,
+      "votes": [
+        1,
+        3
+      ],
+      "wrong_votes": {
+        "1": 1
+      },
+      "family": "proximity",
+      "difficulty": "medium",
+      "model_votes": {},
+      "notes": []
+    },
+    "mug_cond": {
+      "status": "disagree",
+      "n_human": 2,
+      "key_shown_idx": 0,
+      "votes": [
+        0,
+        3
+      ],
+      "wrong_votes": {
+        "3": 1
+      },
+      "family": "condition",
+      "difficulty": "medium",
+      "model_votes": {},
+      "notes": []
+    },
+    "mug_purpose": {
+      "status": "agree",
+      "n_human": 2,
+      "key_shown_idx": 2,
+      "votes": [
+        2,
+        2
+      ],
+      "wrong_votes": {},
+      "family": "purpose_fit",
+      "difficulty": "hard",
+      "model_votes": {},
+      "notes": []
+    },
+    "mug_excl": {
+      "status": "undecidable",
+      "n_human": 2,
+      "key_shown_idx": 0,
+      "votes": [
+        null,
+        null
+      ],
+      "wrong_votes": {},
+      "family": "exclusion",
+      "difficulty": "hard",
+      "model_votes": {},
+      "notes": []
+    },
+    "mug_salience": {
+      "status": "agree",
+      "n_human": 2,
+      "key_shown_idx": 2,
+      "votes": [
+        2,
+        2
+      ],
+      "wrong_votes": {},
+      "family": "salience",
+      "difficulty": "medium",
+      "model_votes": {},
+      "notes": []
+    },
+    "book_already": {
+      "status": "agree",
+      "n_human": 2,
+      "key_shown_idx": 0,
+      "votes": [
+        0,
+        0
+      ],
+      "wrong_votes": {},
+      "family": "already_satisfied",
+      "difficulty": "easy",
+      "model_votes": {},
+      "notes": []
+    },
+    "book_afford": {
+      "status": "agree",
+      "n_human": 2,
+      "key_shown_idx": 1,
+      "votes": [
+        1,
+        1
+      ],
+      "wrong_votes": {},
+      "family": "affordance",
+      "difficulty": "hard",
+      "model_votes": {},
+      "notes": []
+    },
+    "book_state": {
+      "status": "agree",
+      "n_human": 2,
+      "key_shown_idx": 1,
+      "votes": [
+        1,
+        1
+      ],
+      "wrong_votes": {},
+      "family": "state_blocks",
+      "difficulty": "medium",
+      "model_votes": {},
+      "notes": []
+    },
+    "book_own": {
+      "status": "agree",
+      "n_human": 2,
+      "key_shown_idx": 2,
+      "votes": [
+        2,
+        2
+      ],
+      "wrong_votes": {},
+      "family": "ownership",
+      "difficulty": "hard",
+      "model_votes": {},
+      "notes": []
+    },
+    "book_recency": {
+      "status": "undecidable",
+      "n_human": 2,
+      "key_shown_idx": 1,
+      "votes": [
+        1,
+        null
+      ],
+      "wrong_votes": {},
+      "family": "recency",
+      "difficulty": "medium",
+      "model_votes": {},
+      "notes": []
+    },
+    "book_prox": {
+      "status": "undecidable",
+      "n_human": 2,
+      "key_shown_idx": 0,
+      "votes": [
+        0,
+        null
+      ],
+      "wrong_votes": {},
+      "family": "proximity",
+      "difficulty": "medium",
+      "model_votes": {},
+      "notes": []
+    },
+    "book_cond": {
+      "status": "agree",
+      "n_human": 2,
+      "key_shown_idx": 0,
+      "votes": [
+        0,
+        0
+      ],
+      "wrong_votes": {},
+      "family": "condition",
+      "difficulty": "medium",
+      "model_votes": {},
+      "notes": []
+    },
+    "book_purpose": {
+      "status": "undecidable",
+      "n_human": 2,
+      "key_shown_idx": 0,
+      "votes": [
+        1,
+        null
+      ],
+      "wrong_votes": {
+        "1": 1
+      },
+      "family": "purpose_fit",
+      "difficulty": "medium",
+      "model_votes": {},
+      "notes": []
+    },
+    "book_excl": {
+      "status": "agree",
+      "n_human": 2,
+      "key_shown_idx": 2,
+      "votes": [
+        2,
+        2
+      ],
+      "wrong_votes": {},
+      "family": "exclusion",
+      "difficulty": "hard",
+      "model_votes": {},
+      "notes": []
+    },
+    "book_salience": {
+      "status": "agree",
+      "n_human": 2,
+      "key_shown_idx": 1,
+      "votes": [
+        1,
+        1
+      ],
+      "wrong_votes": {},
+      "family": "salience",
+      "difficulty": "medium",
+      "model_votes": {},
+      "notes": []
+    },
+    "bottle_already": {
+      "status": "disagree",
+      "n_human": 2,
+      "key_shown_idx": 2,
+      "votes": [
+        0,
+        2
+      ],
+      "wrong_votes": {
+        "0": 1
+      },
+      "family": "already_satisfied",
+      "difficulty": "easy",
+      "model_votes": {},
+      "notes": []
+    },
+    "bottle_afford": {
+      "status": "agree",
+      "n_human": 2,
+      "key_shown_idx": 1,
+      "votes": [
+        1,
+        1
+      ],
+      "wrong_votes": {},
+      "family": "affordance",
+      "difficulty": "hard",
+      "model_votes": {},
+      "notes": []
+    },
+    "bottle_state": {
+      "status": "agree",
+      "n_human": 2,
+      "key_shown_idx": 2,
+      "votes": [
+        2,
+        2
+      ],
+      "wrong_votes": {},
+      "family": "state_blocks",
+      "difficulty": "easy",
+      "model_votes": {},
+      "notes": []
+    },
+    "bottle_own": {
+      "status": "disagree",
+      "n_human": 2,
+      "key_shown_idx": 1,
+      "votes": [
+        1,
+        0
+      ],
+      "wrong_votes": {
+        "0": 1
+      },
+      "family": "ownership",
+      "difficulty": "medium",
+      "model_votes": {},
+      "notes": []
+    },
+    "bottle_recency": {
+      "status": "agree",
+      "n_human": 2,
+      "key_shown_idx": 1,
+      "votes": [
+        1,
+        1
+      ],
+      "wrong_votes": {},
+      "family": "recency",
+      "difficulty": "medium",
+      "model_votes": {},
+      "notes": []
+    },
+    "bottle_prox": {
+      "status": "undecidable",
+      "n_human": 2,
+      "key_shown_idx": 3,
+      "votes": [
+        3,
+        null
+      ],
+      "wrong_votes": {},
+      "family": "proximity",
+      "difficulty": "medium",
+      "model_votes": {},
+      "notes": []
+    },
+    "bottle_cond": {
+      "status": "agree",
+      "n_human": 2,
+      "key_shown_idx": 2,
+      "votes": [
+        2,
+        2
+      ],
+      "wrong_votes": {},
+      "family": "condition",
+      "difficulty": "medium",
+      "model_votes": {},
+      "notes": []
+    },
+    "bottle_purpose": {
+      "status": "undecidable",
+      "n_human": 2,
+      "key_shown_idx": 1,
+      "votes": [
+        1,
+        null
+      ],
+      "wrong_votes": {},
+      "family": "purpose_fit",
+      "difficulty": "easy",
+      "model_votes": {},
+      "notes": []
+    },
+    "bottle_excl": {
+      "status": "agree",
+      "n_human": 2,
+      "key_shown_idx": 1,
+      "votes": [
+        1,
+        1
+      ],
+      "wrong_votes": {},
+      "family": "exclusion",
+      "difficulty": "hard",
+      "model_votes": {},
+      "notes": []
+    },
+    "bottle_salience": {
+      "status": "agree",
+      "n_human": 2,
+      "key_shown_idx": 1,
+      "votes": [
+        1,
+        1
+      ],
+      "wrong_votes": {},
+      "family": "salience",
+      "difficulty": "medium",
+      "model_votes": {},
+      "notes": []
+    },
+    "bowl_already": {
+      "status": "disagree",
+      "n_human": 2,
+      "key_shown_idx": 0,
+      "votes": [
+        0,
+        1
+      ],
+      "wrong_votes": {
+        "1": 1
+      },
+      "family": "already_satisfied",
+      "difficulty": "easy",
+      "model_votes": {},
+      "notes": []
+    },
+    "bowl_afford": {
+      "status": "agree",
+      "n_human": 2,
+      "key_shown_idx": 0,
+      "votes": [
+        0,
+        0
+      ],
+      "wrong_votes": {},
+      "family": "affordance",
+      "difficulty": "medium",
+      "model_votes": {},
+      "notes": []
+    },
+    "bowl_state": {
+      "status": "agree",
+      "n_human": 2,
+      "key_shown_idx": 2,
+      "votes": [
+        2,
+        2
+      ],
+      "wrong_votes": {},
+      "family": "state_blocks",
+      "difficulty": "hard",
+      "model_votes": {},
+      "notes": []
+    },
+    "bowl_own": {
+      "status": "key_wrong",
+      "n_human": 2,
+      "key_shown_idx": 1,
+      "votes": [
+        2,
+        2
+      ],
+      "wrong_votes": {
+        "2": 2
+      },
+      "family": "ownership",
+      "difficulty": "hard",
+      "model_votes": {},
+      "notes": []
+    },
+    "bowl_recency": {
+      "status": "agree",
+      "n_human": 2,
+      "key_shown_idx": 3,
+      "votes": [
+        3,
+        3
+      ],
+      "wrong_votes": {},
+      "family": "recency",
+      "difficulty": "medium",
+      "model_votes": {},
+      "notes": []
+    },
+    "bowl_prox": {
+      "status": "agree",
+      "n_human": 2,
+      "key_shown_idx": 0,
+      "votes": [
+        0,
+        0
+      ],
+      "wrong_votes": {},
+      "family": "proximity",
+      "difficulty": "easy",
+      "model_votes": {},
+      "notes": []
+    },
+    "bowl_cond": {
+      "status": "agree",
+      "n_human": 2,
+      "key_shown_idx": 3,
+      "votes": [
+        3,
+        3
+      ],
+      "wrong_votes": {},
+      "family": "condition",
+      "difficulty": "medium",
+      "model_votes": {},
+      "notes": []
+    },
+    "bowl_purpose": {
+      "status": "agree",
+      "n_human": 2,
+      "key_shown_idx": 0,
+      "votes": [
+        0,
+        0
+      ],
+      "wrong_votes": {},
+      "family": "purpose_fit",
+      "difficulty": "easy",
+      "model_votes": {},
+      "notes": []
+    },
+    "bowl_excl": {
+      "status": "undecidable",
+      "n_human": 2,
+      "key_shown_idx": 0,
+      "votes": [
+        3,
+        null
+      ],
+      "wrong_votes": {
+        "3": 1
+      },
+      "family": "exclusion",
+      "difficulty": "hard",
+      "model_votes": {},
+      "notes": []
+    },
+    "bowl_salience": {
+      "status": "agree",
+      "n_human": 2,
+      "key_shown_idx": 3,
+      "votes": [
+        3,
+        3
+      ],
+      "wrong_votes": {},
+      "family": "salience",
+      "difficulty": "medium",
+      "model_votes": {},
+      "notes": []
+    },
+    "remote_already": {
+      "status": "agree",
+      "n_human": 2,
+      "key_shown_idx": 2,
+      "votes": [
+        2,
+        2
+      ],
+      "wrong_votes": {},
+      "family": "already_satisfied",
+      "difficulty": "easy",
+      "model_votes": {},
+      "notes": []
+    },
+    "remote_afford": {
+      "status": "agree",
+      "n_human": 2,
+      "key_shown_idx": 2,
+      "votes": [
+        2,
+        2
+      ],
+      "wrong_votes": {},
+      "family": "affordance",
+      "difficulty": "medium",
+      "model_votes": {},
+      "notes": []
+    },
+    "remote_state": {
+      "status": "agree",
+      "n_human": 2,
+      "key_shown_idx": 0,
+      "votes": [
+        0,
+        0
+      ],
+      "wrong_votes": {},
+      "family": "state_blocks",
+      "difficulty": "medium",
+      "model_votes": {},
+      "notes": []
+    },
+    "remote_own": {
+      "status": "disagree",
+      "n_human": 2,
+      "key_shown_idx": 0,
+      "votes": [
+        0,
+        1
+      ],
+      "wrong_votes": {
+        "1": 1
+      },
+      "family": "ownership",
+      "difficulty": "hard",
+      "model_votes": {},
+      "notes": []
+    },
+    "remote_recency": {
+      "status": "agree",
+      "n_human": 2,
+      "key_shown_idx": 1,
+      "votes": [
+        1,
+        1
+      ],
+      "wrong_votes": {},
+      "family": "recency",
+      "difficulty": "hard",
+      "model_votes": {},
+      "notes": []
+    },
+    "remote_prox": {
+      "status": "agree",
+      "n_human": 2,
+      "key_shown_idx": 2,
+      "votes": [
+        2,
+        2
+      ],
+      "wrong_votes": {},
+      "family": "proximity",
+      "difficulty": "medium",
+      "model_votes": {},
+      "notes": []
+    },
+    "remote_cond": {
+      "status": "agree",
+      "n_human": 2,
+      "key_shown_idx": 0,
+      "votes": [
+        0,
+        0
+      ],
+      "wrong_votes": {},
+      "family": "condition",
+      "difficulty": "hard",
+      "model_votes": {},
+      "notes": []
+    },
+    "remote_purpose": {
+      "status": "agree",
+      "n_human": 2,
+      "key_shown_idx": 2,
+      "votes": [
+        2,
+        2
+      ],
+      "wrong_votes": {},
+      "family": "purpose_fit",
+      "difficulty": "hard",
+      "model_votes": {},
+      "notes": []
+    },
+    "remote_excl": {
+      "status": "disagree",
+      "n_human": 2,
+      "key_shown_idx": 0,
+      "votes": [
+        3,
+        2
+      ],
+      "wrong_votes": {
+        "3": 1,
+        "2": 1
+      },
+      "family": "exclusion",
+      "difficulty": "hard",
+      "model_votes": {},
+      "notes": []
+    },
+    "remote_salience": {
+      "status": "agree",
+      "n_human": 2,
+      "key_shown_idx": 3,
+      "votes": [
+        3,
+        3
+      ],
+      "wrong_votes": {},
+      "family": "salience",
+      "difficulty": "medium",
+      "model_votes": {},
+      "notes": []
+    },
+    "cushion_already": {
+      "status": "agree",
+      "n_human": 2,
+      "key_shown_idx": 2,
+      "votes": [
+        2,
+        2
+      ],
+      "wrong_votes": {},
+      "family": "already_satisfied",
+      "difficulty": "medium",
+      "model_votes": {},
+      "notes": []
+    },
+    "cushion_afford": {
+      "status": "agree",
+      "n_human": 2,
+      "key_shown_idx": 1,
+      "votes": [
+        1,
+        1
+      ],
+      "wrong_votes": {},
+      "family": "affordance",
+      "difficulty": "hard",
+      "model_votes": {},
+      "notes": []
+    },
+    "cushion_state": {
+      "status": "agree",
+      "n_human": 2,
+      "key_shown_idx": 2,
+      "votes": [
+        2,
+        2
+      ],
+      "wrong_votes": {},
+      "family": "state_blocks",
+      "difficulty": "hard",
+      "model_votes": {},
+      "notes": []
+    },
+    "cushion_own": {
+      "status": "agree",
+      "n_human": 2,
+      "key_shown_idx": 1,
+      "votes": [
+        1,
+        1
+      ],
+      "wrong_votes": {},
+      "family": "ownership",
+      "difficulty": "hard",
+      "model_votes": {},
+      "notes": []
+    },
+    "cushion_recency": {
+      "status": "disagree",
+      "n_human": 2,
+      "key_shown_idx": 0,
+      "votes": [
+        1,
+        2
+      ],
+      "wrong_votes": {
+        "1": 1,
+        "2": 1
+      },
+      "family": "recency",
+      "difficulty": "medium",
+      "model_votes": {},
+      "notes": []
+    },
+    "cushion_prox": {
+      "status": "disagree",
+      "n_human": 2,
+      "key_shown_idx": 2,
+      "votes": [
+        1,
+        2
+      ],
+      "wrong_votes": {
+        "1": 1
+      },
+      "family": "proximity",
+      "difficulty": "medium",
+      "model_votes": {},
+      "notes": []
+    },
+    "cushion_cond": {
+      "status": "agree",
+      "n_human": 2,
+      "key_shown_idx": 2,
+      "votes": [
+        2,
+        2
+      ],
+      "wrong_votes": {},
+      "family": "condition",
+      "difficulty": "medium",
+      "model_votes": {},
+      "notes": []
+    },
+    "cushion_purpose": {
+      "status": "agree",
+      "n_human": 2,
+      "key_shown_idx": 2,
+      "votes": [
+        2,
+        2
+      ],
+      "wrong_votes": {},
+      "family": "purpose_fit",
+      "difficulty": "hard",
+      "model_votes": {},
+      "notes": []
+    },
+    "cushion_excl": {
+      "status": "disagree",
+      "n_human": 2,
+      "key_shown_idx": 2,
+      "votes": [
+        1,
+        3
+      ],
+      "wrong_votes": {
+        "1": 1,
+        "3": 1
+      },
+      "family": "exclusion",
+      "difficulty": "hard",
+      "model_votes": {},
+      "notes": []
+    },
+    "cushion_salience": {
+      "status": "agree",
+      "n_human": 2,
+      "key_shown_idx": 3,
+      "votes": [
+        3,
+        3
+      ],
+      "wrong_votes": {},
+      "family": "salience",
+      "difficulty": "medium",
+      "model_votes": {},
+      "notes": []
+    }
+  }
+}

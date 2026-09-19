@@ -171,7 +171,12 @@ def fleiss_kappa(table: np.ndarray) -> float:
     return float((P_bar - Pe) / (1 - Pe)) if Pe < 1 else float("nan")
 
 
-def cmd_report(out_path: str) -> int:
+def cmd_report(out_path: str, only: Optional[List[str]] = None) -> int:
+    """`only` restricts the human pool -- the two-annotator sensitivity in R1's
+    reply 7 (kappa 0.722 before the third reader) is reproduced with
+    `--annotators adit,annotator2`. It is a sensitivity, not a way to drop an
+    inconvenient rater: a pass is excluded for provenance, never for its numbers
+    (see data/r2_audit_quarantine/README.md)."""
     sheet = {p["core_id"]: p for p in build_sheet()}
     anns = _load()
     if not anns:
@@ -181,6 +186,12 @@ def cmd_report(out_path: str) -> int:
 
     humans = sorted({r["annotator"] for v in anns.values() for r in v.values()
                      if r.get("kind") == "human"})
+    if only:
+        missing = set(only) - set(humans)
+        if missing:
+            raise SystemExit(f"--annotators names unknown annotators {sorted(missing)}; "
+                             f"have {humans}")
+        humans = [a for a in humans if a in only]
     models = sorted({r["annotator"] for v in anns.values() for r in v.values()
                      if r.get("kind") != "human"})
     print(f"human annotators: {humans or '(none)'}")
@@ -239,6 +250,13 @@ def cmd_report(out_path: str) -> int:
         print(f"\n  retained {keep}/{len(audited)} audited cores "
               f"({keep / len(audited):.1%})")
 
+    # Written into the verdict file as well as printed, so the freeze can
+    # carry a *computed* kappa in meta_json rather than one copied from a
+    # reply document.
+    agreement: Dict[str, object] = {"n_annotators": len(humans),
+                                    "annotators": humans,
+                                    "n_fully_rated": len(rows),
+                                    "raw_agreement": None, "fleiss_kappa": None}
     if rows:
         counts = np.array(rows)
         same = np.array([c.max() == c.sum() for c in counts])
@@ -248,6 +266,8 @@ def cmd_report(out_path: str) -> int:
         k = fleiss_kappa(counts)
         print(f"  Fleiss kappa    {k:.3f}" if np.isfinite(k)
               else "  Fleiss kappa    n/a (uneven ratings per core)")
+        agreement["raw_agreement"] = float(same.mean())
+        agreement["fleiss_kappa"] = float(k) if np.isfinite(k) else None
     else:
         print("\nINTER-ANNOTATOR AGREEMENT: needs >= 2 human annotators "
               "with complete passes.")
@@ -276,7 +296,8 @@ def cmd_report(out_path: str) -> int:
 
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump({"annotators_human": humans, "annotators_model": models,
-                   "by_status": dict(by_status), "verdicts": verdicts}, f, indent=2)
+                   "by_status": dict(by_status), "agreement": agreement,
+                   "verdicts": verdicts}, f, indent=2)
     print(f"\nwrote verdicts -> {out_path}")
     print("Feed to the build with: "
           "python scripts/r2_build_dataset.py --audit data/r2_core_audit.json "
@@ -292,6 +313,10 @@ def main() -> int:
     ap.add_argument("--annotate", default=None, help="annotator name")
     ap.add_argument("--kind", default="human", choices=("human", "model"))
     ap.add_argument("--report", action="store_true")
+    ap.add_argument("--annotators", default=None,
+                    help="comma-separated subset of human annotators for a "
+                         "sensitivity report (e.g. the two-rater run); "
+                         "pair with --out so the main verdict file is untouched")
     ap.add_argument("--out", default=VERDICT)
     args = ap.parse_args()
 
@@ -300,7 +325,11 @@ def main() -> int:
     if args.annotate:
         return cmd_annotate(args.annotate, args.kind)
     if args.report:
-        return cmd_report(args.out)
+        only = [a.strip() for a in args.annotators.split(",")] if args.annotators else None
+        if only and args.out == VERDICT:
+            raise SystemExit("--annotators is a sensitivity run; give it its own --out "
+                             "so it cannot overwrite the three-rater verdicts")
+        return cmd_report(args.out, only)
     ap.print_help()
     return 1
 

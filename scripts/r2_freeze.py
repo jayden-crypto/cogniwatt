@@ -189,6 +189,20 @@ def main() -> int:
     ap.add_argument("--ablation-tiers", nargs="*", default=["think_big_q8"],
                     help="measured configurations that are NOT env tiers. Dropped "
                          "from the arrays, recorded in meta.")
+    ap.add_argument("--audit", default=None,
+                    help="data/r2_core_audit.json. Records kappa, annotator count "
+                         "and cores retained in meta, so the artefact says which "
+                         "human gate it passed.")
+    ap.add_argument("--reference-analysis", action="append", default=[],
+                    metavar="NAME=PATH",
+                    help="other analyses of the same raw table, e.g. "
+                         "all_660=data/r2_analysis_real.json. Their pooled "
+                         "accuracy/gamma go in meta['subsets'] beside the one the "
+                         "arrays were built from, so no figure can be drawn from "
+                         "the wrong subset by accident. The arrays always come "
+                         "from --analysis.")
+    ap.add_argument("--subset-name", default="trained",
+                    help="label for the --analysis subset in meta['subsets']")
     ap.add_argument("--verify-only", action="store_true")
     args = ap.parse_args()
 
@@ -239,6 +253,56 @@ def main() -> int:
                 f"measured, {c['operating_snr']} dB operating point")
     if rec is not None:
         extra["asr_recovery"] = rec
+
+    # Which human gate the dataset passed, from the verdict file itself.
+    if args.audit:
+        with open(args.audit, encoding="utf-8") as f:
+            aud = json.load(f)
+        agr = aud.get("agreement", {})
+        extra["audit"] = {
+            "file": args.audit,
+            "n_annotators": agr.get("n_annotators", len(aud.get("annotators_human", []))),
+            "annotators": aud.get("annotators_human"),
+            "audit_kappa": agr.get("fleiss_kappa"),
+            "raw_agreement": agr.get("raw_agreement"),
+            "n_fully_rated": agr.get("n_fully_rated"),
+            "n_cores_total": len(aud.get("verdicts", {})),
+            "n_cores_retained": aud.get("by_status", {}).get("agree"),
+            "by_status": aud.get("by_status"),
+            "rule": "core dropped unless every annotator picked the keyed answer "
+                    "(docs/R2_HANDOFF.md §4); dropped cores are not re-keyed",
+        }
+
+    # Every subset in one place. `trained_on` names the one the arrays hold.
+    def _pool(a: Dict) -> Dict[str, object]:
+        return {"n_rows": a.get("n_rows"),
+                "n_scenarios_first_repeat": {t: a["accuracy"][t]["pooled"]["n"]
+                                             for t in a["tiers"]},
+                "n_cores": {t: a["accuracy"][t]["pooled"]["n_cores"] for t in a["tiers"]},
+                "accuracy": {t: a["accuracy"][t]["pooled"]["acc"] for t in a["tiers"]},
+                "accuracy_ci": {t: a["accuracy"][t]["pooled"]["ci"] for t in a["tiers"]},
+                "accuracy_by_k": {t: {k: a["accuracy"][t][k]["acc"]
+                                      for k in a["accuracy"][t] if k != "pooled"}
+                                  for t in a["tiers"]},
+                "gamma": {t: a["decay"][t]["gamma"] for t in a["tiers"]},
+                "gamma_ci": {t: a["decay"][t]["gamma_ci"] for t in a["tiers"]},
+                "rho": {t: a["decay"][t]["rho"] for t in a["tiers"]}}
+
+    subsets: Dict[str, object] = {args.subset_name: _pool(analysis)}
+    for spec in args.reference_analysis:
+        if "=" not in spec:
+            raise SystemExit(f"--reference-analysis expects NAME=PATH, got {spec!r}")
+        name, path = spec.split("=", 1)
+        with open(path, encoding="utf-8") as f:
+            ref = json.load(f)
+        if ref.get("source") != analysis.get("source"):
+            print(f"WARNING: {name} was derived from {ref.get('source')}, the "
+                  f"trained subset from {analysis.get('source')}")
+        subsets[name] = _pool(ref)
+        subsets[name]["file"] = path
+    subsets[args.subset_name]["file"] = args.analysis
+    extra["subsets"] = subsets
+    extra["trained_on"] = args.subset_name
 
     arrays = build(analysis, wer, args.ask_accuracy,
                    args.ask_gamma if args.ask_gamma is not None

@@ -223,19 +223,78 @@ def test_dataset_has_no_position_or_colour_shortcut():
 
     from cogniwatt.dialogue.schema import load_scenarios
 
+    from r2_build_dataset import build
+
+    # The handoff's >= 600 / >= 200-per-k quota is a property of the *authored
+    # pool*: the build emits 720 so that the human audit can drop cores without
+    # the survivors falling under it. The shipped file is what survives the
+    # audit (348 from 29 cores after R1's reply 7), so the quota is checked on
+    # the unfiltered build and the shipped file is held to the shortcut checks
+    # plus a floor that keeps the chi-square guard meaningful.
+    full = build()
+    assert len(full) >= 600, f"authored pool builds only {len(full)}; handoff asks for >= 600"
+    for k in (2, 3, 4):
+        assert sum(1 for s in full if s.k == k) >= 200, f"k={k}: pool under quota"
+
     path = os.path.join("data", "r2_scenarios.jsonl")
     if not os.path.exists(path):
         print("    (skipped: run scripts/r2_build_dataset.py first)")
         return
     ss = load_scenarios(path)
-    assert len(ss) >= 600, f"only {len(ss)} scenarios; handoff asks for >= 600"
     for k in (2, 3, 4):
         sub = [s for s in ss if s.k == k]
-        assert len(sub) >= 200, f"k={k}: only {len(sub)}"
+        assert len(sub) >= 100, f"k={k}: only {len(sub)} shipped scenarios"
         c = Counter(s.true_idx for s in sub)
         _assert_no_detectable_prior(c, f"k={k} position")
     cols = Counter(s.candidates[s.true_idx].color for s in ss)
     _assert_no_detectable_prior(cols, "colour")
+
+
+@test
+def test_audit_filter_keeps_ids_aligned_with_raw_table():
+    """Dropping cores must never renumber the survivors.
+
+    Ids are positional, and the raw response table is keyed by them. The first
+    audit filter ran before id assignment; with 29 of 60 cores kept, every one
+    of the 348 surviving ids then named a different scenario from the one
+    measured under that id, and the analysis would have scored dropped-core
+    responses as the audited set without an error. This pins the fix.
+    """
+    from r2_build_dataset import apply_audit, audited_core_ids, build
+    from cogniwatt.dialogue.authored import CORES
+
+    full = build()
+    full_map = {s.id: s.core_id for s in full}
+
+    # Synthetic verdicts: keep every other core. Independent of the real audit
+    # file so the test does not change meaning when the audit is re-run.
+    import json, tempfile
+    kept_ids = {c.id for i, c in enumerate(CORES) if i % 2 == 0}
+    verdicts = {c.id: {"status": "agree" if c.id in kept_ids else "disagree"}
+                for c in CORES}
+    vp = os.path.join(tempfile.mkdtemp(), "audit.json")
+    with open(vp, "w", encoding="utf-8") as f:
+        json.dump({"verdicts": verdicts}, f)
+
+    import io, contextlib
+    with contextlib.redirect_stdout(io.StringIO()):
+        kept = audited_core_ids(list(CORES), vp, drop_unaudited=True)
+        aud = apply_audit(full, kept)
+
+    assert kept == kept_ids
+    assert {s.core_id for s in aud} == kept_ids, "filter kept the wrong cores"
+    assert all(full_map[s.id] == s.core_id for s in aud), \
+        "audit filter renumbered scenarios; raw-table join is broken"
+    assert all(s.core_id in kept_ids for s in aud)
+
+    # And against the real raw table when it is present.
+    raw = os.path.join("data", "r2_raw_all.csv.gz")
+    if os.path.exists(raw):
+        import pandas as pd
+        rm = (pd.read_csv(raw, usecols=["scenario_id", "core_id"])
+                .drop_duplicates("scenario_id").set_index("scenario_id")["core_id"])
+        bad = [s.id for s in aud if s.id in rm.index and rm[s.id] != s.core_id]
+        assert not bad, f"{len(bad)} audited ids disagree with the raw table, e.g. {bad[:3]}"
 
 
 def _assert_no_detectable_prior(counts, what, alpha=0.01):

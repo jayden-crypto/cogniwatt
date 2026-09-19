@@ -21,7 +21,7 @@ ANNEAL = ["--no-recurrent", "--n-envs", "16", "--ent-coef", "0.12",
 
 #: Canonical config + R2's fully-measured artefact. The base for every
 #: experiment run after the three-tier measurement landed.
-MEAS = ANNEAL + ["--dialogue", "data/dialogue_measured_recovery.npz"]
+MEAS = ANNEAL + ["--dialogue", "data/dialogue_measured.npz"]
 
 #: arm -> (extra train.py flags, seeds).  Everything else is train.py defaults.
 ARMS = {
@@ -112,12 +112,12 @@ ARMS = {
     # COLOR_SIM (their section 4 finding) and referent recovery in place of
     # (1 - WER) for the ask channel (their section 3.2). Still measured-local
     # against placeholder offload/ask accuracy.
-    "r2final": (ANNEAL + ["--dialogue", "data/dialogue_measured_recovery.npz"],
+    "r2final": (ANNEAL + ["--dialogue", "data/dialogue_measured.npz"],
                 list(range(4))),
     # All three model tiers measured (offload = Qwen2.5-7B Q4_K_M hosted
     # locally), ask still an R1 placeholder scaled by measured referent
     # recovery. This is the artefact the report's headline should be built on.
-    "r2full": (ANNEAL + ["--dialogue", "data/dialogue_measured_recovery.npz"],
+    "r2full": (ANNEAL + ["--dialogue", "data/dialogue_measured.npz"],
                list(range(6))),
 
     # --- where does the problem stop being degenerate? ----------------------
@@ -143,6 +143,13 @@ ARMS = {
     # suffices and the agent must sequence cheap evidence under a budget --
     # which is where a learned policy should earn its place.
     "m_alone": (MEAS + ["--net-quality", "0.1", "--patience", "0"], list(range(4))),
+
+    # --- the audited artefact ----------------------------------------------
+    # R2's re-freeze on the 29 human-verified cores. asr_recovery is now emitted
+    # upstream, so r1_merge_recovery.py is deleted and this trains on their file
+    # directly.
+    "r2audited":       (MEAS, list(range(4))),
+    "r2audited_alone": (MEAS + ["--net-quality", "0.1", "--patience", "0"], list(range(4))),
     "ask0.5":          (["--no-recurrent", "--n-envs", "16", "--lambda-ask", "0.5"], [0]),
     "ask3.5":          (["--no-recurrent", "--n-envs", "16", "--lambda-ask", "3.5"], [0]),
     "ask6":            (["--no-recurrent", "--n-envs", "16", "--lambda-ask", "6.0"], [0]),

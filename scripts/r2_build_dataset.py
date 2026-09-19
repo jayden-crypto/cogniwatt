@@ -63,22 +63,21 @@ def _distractor_subsets(core: Core, k: int) -> List[List[int]]:
     return [list(c) for c in combinations(idx, n_needed)]
 
 
-def apply_audit(cores: List[Core], verdict_path: str, drop_unaudited: bool
-                ) -> List[Core]:
-    """Keep only cores the human audit cleared.
+def audited_core_ids(cores: List[Core], verdict_path: str, drop_unaudited: bool
+                     ) -> set:
+    """Ids of the cores the human audit cleared.
 
     docs/R2_HANDOFF.md §4 is a hard gate: if annotators disagree on the answer,
-    the core is bad and everything generated from it is bad with it. This runs
-    *before* expansion so a failed core cannot contribute a single scenario.
+    the core is bad and everything generated from it is bad with it.
     """
     with open(verdict_path, encoding="utf-8") as f:
         verdicts = json.load(f)["verdicts"]
 
-    kept, dropped = [], []
+    kept, dropped = set(), []
     for c in cores:
         status = verdicts.get(c.id, {}).get("status", "unaudited")
         if status == "agree" or (status == "unaudited" and not drop_unaudited):
-            kept.append(c)
+            kept.add(c.id)
         else:
             dropped.append((c.id, status))
 
@@ -88,6 +87,26 @@ def apply_audit(cores: List[Core], verdict_path: str, drop_unaudited: bool
     if not kept:
         raise SystemExit("audit dropped every core; nothing to build")
     return kept
+
+
+def apply_audit(scenarios: List[Scenario], kept_core_ids: set) -> List[Scenario]:
+    """Drop every scenario generated from a core that failed the audit.
+
+    Runs *after* `build()` has assigned ids, for the same reason as
+    `drop_contested`: ids are positional (`sc_0041`), so removing cores before
+    expansion renumbers every survivor and silently breaks the join to the raw
+    response table. The first version of this filter did exactly that -- with
+    the 29 audited cores, all 348 surviving ids named a *different* scenario
+    from the one the raw table had measured under that id (`sc_0000` became
+    `mug_afford`; the raw table had it as `mug_already`, a dropped core), and
+    `r2_analyze.py --scenarios` would have scored dropped-core responses as the
+    audited set without a single error. `tests/test_r2_estimators.py` now pins
+    id stability under the audit filter.
+    """
+    keep = [s for s in scenarios if s.core_id in kept_core_ids]
+    print(f"audit: {len(scenarios)} -> {len(keep)} scenarios "
+          f"({len({s.core_id for s in keep})} cores); ids unchanged")
+    return keep
 
 
 def build(variants: int = VARIANTS_PER_CORE_PER_K, seed: int = 20260820,
@@ -279,8 +298,9 @@ def main() -> int:
                          "(the Lab-3 gradient check)")
     ap.add_argument("--audit", default=None,
                     help="data/r2_core_audit.json from scripts/r2_audit.py; "
-                         "cores that failed the human audit are dropped before "
-                         "expansion, so a bad core contributes no scenarios")
+                         "every scenario from a core that failed the human "
+                         "audit is dropped. Ids of survivors are unchanged, "
+                         "so the existing raw responses still join.")
     ap.add_argument("--drop-unaudited", action="store_true",
                     help="also drop cores nobody has audited yet (strict mode "
                          "for the final dataset)")
@@ -292,12 +312,14 @@ def main() -> int:
     ap.add_argument("--check-only", action="store_true")
     args = ap.parse_args()
 
-    cores = CORES
-    if args.audit:
-        cores = apply_audit(list(CORES), args.audit, args.drop_unaudited)
-    elif args.drop_unaudited:
+    if args.drop_unaudited and not args.audit:
         raise SystemExit('--drop-unaudited requires --audit')
-    scenarios = build(variants=args.variants, seed=args.seed, cores=cores)
+    # Always expand the full core set first so ids stay aligned with the raw
+    # response table; every exclusion below is a filter over assigned ids.
+    scenarios = build(variants=args.variants, seed=args.seed)
+    if args.audit:
+        kept = audited_core_ids(list(CORES), args.audit, args.drop_unaudited)
+        scenarios = apply_audit(scenarios, kept)
     if args.drop_contested:
         scenarios = drop_contested(scenarios)
 

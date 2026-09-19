@@ -10,6 +10,17 @@
     "agree": 29,
     "disagree": 18
   },
+  "agreement": {
+    "n_annotators": 3,
+    "annotators": [
+      "adit",
+      "annotator2",
+      "annotator3"
+    ],
+    "n_fully_rated": 47,
+    "raw_agreement": 0.6170212765957447,
+    "fleiss_kappa": 0.5915642221280203
+  },
   "verdicts": {
     "mug_already": {
       "status": "undecidable",

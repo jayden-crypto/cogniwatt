@@ -3,9 +3,11 @@
 Live document. Every number that reaches R1 lands here first, with its
 provenance, and every deviation from `docs/R2_HANDOFF.md` is recorded in §7.
 
-**Status: pipeline complete and validated end-to-end on synthetic data.
-No real model has been queried yet** — that is blocked on the two decisions in
-§8. Every number in §3 below is from the mock backend and must not be quoted.
+**Status (2026-09-19): measurement phase closed.** The human audit is in
+(§3G) and `data/dialogue_measured.npz` is frozen on the 29 cores all three
+annotators resolved identically. §3G carries the numbers R1 trains on; §3A and
+below are the pre-audit record and are superseded where they overlap. §3
+(synthetic pipeline validation) must still not be quoted.
 
 ---
 
@@ -13,7 +15,7 @@ No real model has been queried yet** — that is blocked on the two decisions in
 
 | Deliverable | Artefact | State |
 | --- | --- | --- |
-| A — scenario dataset | `data/r2_scenarios.jsonl` (720) | **done**, audit pending |
+| A — scenario dataset | `data/r2_scenarios.jsonl` (348 audited, of 720 built) | **done**, human-audited (§3G) |
 | B — tier backends | `cogniwatt/dialogue/backends.py` | **done**, unexercised |
 | C — measurement | `scripts/r2_measure.py` | **done**, mock-verified |
 | C — analysis | `scripts/r2_analyze.py` | **done**, estimators unit-tested |
@@ -27,7 +29,7 @@ No real model has been queried yet** — that is blocked on the two decisions in
 | — core audit harness | `scripts/r2_audit.py` | **done**, human passes outstanding |
 
 Gates: `tests/test_env.py` 13/13 (untouched, R1 owns it),
-`tests/test_r2_estimators.py` 15/15.
+`tests/test_r2_estimators.py` 18/18.
 
 ---
 
@@ -81,16 +83,16 @@ whole set — a smaller job than 100 loose scenarios, and a stronger claim.
   fixed seed so all annotators see an identical sheet), answer key withheld.
 * `--annotate <name>` collects a pass; `--report` computes raw agreement,
   Fleiss' κ, and per-core verdicts, then writes `data/r2_core_audit.json`.
-* `r2_build_dataset.py --audit data/r2_core_audit.json` drops failed cores
-  **before** expansion, so a bad core contributes zero scenarios.
+* `r2_build_dataset.py --audit data/r2_core_audit.json` drops every scenario
+  from a failed core, **after** id assignment so survivors keep their ids and
+  the raw-response join holds (see §3G for why that ordering matters).
 
 Verdicts distinguish three failure kinds, because they need different fixes:
 `disagree` (annotators split — drop the core), `key_wrong` (annotators agree
 with each other but not with the authored answer — the key is wrong),
 `undecidable` (an annotator could not choose at all).
 
-**Still outstanding: the human passes.** Two or three people need to fill in
-the sheet. Nothing else in Deliverable A is blocking.
+**Human passes: done** — three annotators, result in §3G.
 
 > **On model annotation.** `--kind model` is supported but model annotations are
 > reported separately and are *excluded from κ by construction*. The cores were
@@ -184,7 +186,139 @@ Two findings that change the §7b protocol:
 
 ---
 
-## 3A. ALL THREE TIERS — the headline result
+## 3G. Human audit — the artefact now trains on 29 unanimous cores
+
+Three humans (Adit, one reader outside the project, annotator 3) filled in the
+blind sheet, no answer key, no discussion. The gate from `R2_HANDOFF.md` §4 —
+*if two humans disagree on the answer, the scenario is bad, drop it* — is
+applied as written: a core survives only if **every** annotator picked the
+keyed answer. All figures below are recomputed here from
+`data/r2_audit/*.jsonl` with `scripts/r2_audit.py --report` and match R1's
+reply 7 exactly.
+
+| | three annotators | two (Adit + outside reader) |
+| --- | --- | --- |
+| cores retained | **29 / 60** (48 %) → **348 / 720** scenarios | 39 / 60 |
+| Fleiss κ | **0.592** (47 fully-rated cores) | 0.722 |
+| raw agreement | 0.617 | 0.800 |
+| verdicts | 29 agree · 18 disagree · 13 undecidable | 39 · 10 · 10, 1 key-wrong |
+
+The third reader cost 10 cores and 0.13 of κ. Both figures are reported: the
+drop is a finding about item difficulty in the pragmatic families, not a
+reason to prefer the smaller pool. Pairwise, Adit↔outside 0.800, Adit↔annotator 3
+0.625, outside↔annotator 3 0.638 — one careful reader resolves about a third of
+these differently from the other two, reproduced across two sittings. No core
+came back `key_wrong` under three annotators (`bowl_own` was, under two, until
+the third reader split it): no key was *provably* wrong, but 31 were not
+defensible. **None of the 31 is re-keyed** — adjudicating them means choosing
+between readings three people already split on, which is contestable for
+exactly the reason the core failed. Dropping needs no adjudication.
+
+### The numbers R1 trains on (`data/dialogue_measured.npz`, `trained_on: audited_348`)
+
+First repeat only; cluster bootstrap over the **29 surviving cores**, so the
+intervals are wider than §3A's — correctly, since 12 permutations of one
+contrast are one fact about the model, not twelve.
+
+| tier | k=2 | k=3 | k=4 | pooled | 95 % CI | was (§3A) | Δ | rho | gamma | gamma CI |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `think_tiny` | 0.491 | 0.371 | 0.328 | **0.397** | [0.342, 0.454] | 0.423 | −0.026 | 0.089 | **0.855** | [0.815, 0.906] |
+| `think_big` | 0.578 | 0.491 | 0.431 | **0.500** | [0.397, 0.603] | 0.603 | −0.103 | 0.294 | **0.621** | [0.533, 0.714] |
+| `offload` (7B) | 0.804 | 0.776 | 0.794 | **0.791** | [0.703, 0.873] | 0.782 | +0.009 | 0.478 | **0.444** | [0.319, 0.596] |
+| `think_big_q8` (ablation) | 0.570 | 0.495 | 0.374 | **0.480** | [0.369, 0.592] | 0.592 | −0.112 | 0.259 | 0.657 | [0.573, 0.750] |
+
+Gradient spread **0.395** (was 0.359). The 7B's flat-in-k result holds
+(0.804 / 0.776 / 0.794). The 3B lands on exactly 0.500 on items three people
+found unanimous, and the 7B stays ~9 points under the ~0.88 ceiling bar (§3B).
+**Cleaning the dataset moved the local tiers down, not up.** gamma keeps its
+monotone-in-scale ordering (0.855 → 0.621 → 0.444); the ICC bootstrap is also
+over the 29 cores, and the 3B's gamma interval no longer excludes the Q8
+ablation's — the two builds are indistinguishable on this subset, which is
+§3E's conclusion restated with honest error bars.
+
+`n_samples` in the artefact is 116 per k for the local tiers and **107** for
+`offload`, because the 7B and the Q8 ablation were measured on the 660-item
+contested-dropped set (§3d) and never saw the 27 receptacle-form scenarios of
+the three surviving `already_satisfied` cores. So for those two tiers the
+audited subset is audit *and* contested drop already. Applying the contested
+drop to the local tiers as well (321 items for every tier) moves `think_big`
+to 0.526 and `think_tiny` to 0.405 and nothing else — the conclusion does not
+depend on that choice, and the artefact follows R1's reply 7 (audit only).
+
+### Human-hard and model-hard are different axes
+
+Accuracy split by whether the core passed the audit (first repeat, every raw
+row, so the 7B's "passed" cell is the 321-item pool):
+
+| tier | audit-passed | audit-failed |
+| --- | --- | --- |
+| `think_tiny` | 0.397 | 0.430 |
+| `think_big` | 0.500 | **0.632** |
+| `think_big_q8` | 0.480 | **0.699** |
+| `offload` | 0.791 | 0.773 |
+
+The models are no worse — and the 3B is thirteen points *better* — on the
+cores humans could not agree on. Model failure is not tracking item ambiguity:
+they fail on expressions three independent people resolve identically. This
+closes the strongest objection available to a reviewer (*"your models look bad
+because your dataset is ambiguous"*) and belongs beside the flat-in-k result:
+the failure is pragmatic inference on clear items, not confusion on unclear
+ones. (R1's reply 7 gives 0.537 / 0.623 for the 3B from a different
+denominator; the direction is identical, and the chapter should carry one set —
+these are the ones the artefact's `subsets` block records.)
+
+### What the audit cost, per family
+
+| family | cores retained |
+| --- | --- |
+| `state_blocks` | 6 / 6 |
+| `affordance`, `condition` | 4 / 6 |
+| `already_satisfied`, `purpose_fit`, `salience` | 3 / 6 |
+| `ownership`, `recency` | 2 / 6 |
+| **`proximity`, `exclusion`** | **1 / 6** |
+
+`proximity` and `exclusion` are effectively gone: one core each, so any
+per-family claim about them is unsupportable and the family rows in §3D's
+taxonomy are reported for completeness only. `already_satisfied` (3 cores,
+and its receptacle forms unmeasured for the 7B) carries the same note. Noun
+balance also broke — `mug` keeps 2 cores against 6 for `bowl` and `cushion` —
+which the shortcut guards tolerate (position and colour remain undetectable,
+target-is-longest at chance) but a per-noun figure should not be drawn.
+
+### A bug the audit exposed in the build
+
+`--audit` originally dropped failed cores **before** expansion. Ids are
+positional, so with 29 cores kept, all 348 surviving ids named a different
+scenario from the one the raw table had measured under that id — `sc_0000`
+became `mug_afford`; the raw table had it as `mug_already`, a dropped core —
+and `r2_analyze.py --scenarios` would have scored dropped-core responses as
+the audited set without an error. The filter now runs after id assignment,
+like `--drop-contested` always did, and
+`test_audit_filter_keeps_ids_aligned_with_raw_table` pins it. The build's
+own docstring had already stated the rule; the audit path just did not follow
+it.
+
+### Provenance in the artefact
+
+`meta_json` now carries `audit` (κ, raw agreement, annotator count, cores
+retained, the rule applied) and `subsets` with the pooled accuracy, per-k
+accuracy, gamma and intervals for **both** `audited_348` and
+`all_660_contested_dropped`, with `trained_on` naming the first. No figure
+can be built from the wrong subset by accident, and a reader can see the
+pre-audit numbers without leaving the file.
+
+**Methods-section limitation, stated plainly:** two of the three annotators
+are project members. Neither had read `data/r2_scenarios.jsonl` (which
+carries `true_idx`) before annotating; the third is outside the project. The
+outside reader agreed with the key at 0.840 — the highest of the three — so the
+pool is not obviously biased toward the authored answers. One pass was
+quarantined mid-audit over a provenance doubt and reinstated after a redo
+reproduced it at 0.978 on co-committed items (`data/r2_audit_quarantine/`):
+a pass is excluded for provenance, never for producing inconvenient numbers.
+
+---
+
+## 3A. ALL THREE TIERS — the headline result (pre-audit; superseded by §3G where they overlap)
 
 `offload` is **Qwen2.5-7B-Instruct Q4_K_M, hosted locally** (R1 reply 4): a
 model too large to reside on a 4 GB device, which is what the tier means. Every
