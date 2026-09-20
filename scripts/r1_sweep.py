@@ -150,6 +150,13 @@ ARMS = {
     # directly.
     "r2audited":       (MEAS, list(range(4))),
     "r2audited_alone": (MEAS + ["--net-quality", "0.1", "--patience", "0"], list(range(4))),
+
+    # --- final: both exclusions on every tier, 321 items ---------------------
+    # R2's audited_321_contested_dropped freeze. All four tiers scored on one
+    # item set (n_samples uniform 107x3), so the gradient spread is a like-for-
+    # like comparison. This is the artefact the report's numbers come from.
+    "r2final321":       (MEAS, list(range(6))),
+    "r2final321_alone": (MEAS + ["--net-quality", "0.1", "--patience", "0"], list(range(6))),
     "ask0.5":          (["--no-recurrent", "--n-envs", "16", "--lambda-ask", "0.5"], [0]),
     "ask3.5":          (["--no-recurrent", "--n-envs", "16", "--lambda-ask", "3.5"], [0]),
     "ask6":            (["--no-recurrent", "--n-envs", "16", "--lambda-ask", "6.0"], [0]),

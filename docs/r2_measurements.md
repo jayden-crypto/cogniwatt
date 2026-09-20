@@ -3,11 +3,13 @@
 Live document. Every number that reaches R1 lands here first, with its
 provenance, and every deviation from `docs/R2_HANDOFF.md` is recorded in §7.
 
-**Status (2026-09-19): measurement phase closed.** The human audit is in
+**Status (2026-09-20): measurement phase closed.** The human audit is in
 (§3G) and `data/dialogue_measured.npz` is frozen on the 29 cores all three
-annotators resolved identically. §3G carries the numbers R1 trains on; §3A and
-below are the pre-audit record and are superseded where they overlap. §3
-(synthetic pipeline validation) must still not be quoted.
+annotators resolved identically, with the contested receptacle forms removed
+as well, so every tier is scored on the **same 321 items**. §3G carries the
+numbers R1 trains on; §3A and below are the pre-audit record and are
+superseded where they overlap. §3 (synthetic pipeline validation) must still
+not be quoted.
 
 ---
 
@@ -15,7 +17,7 @@ below are the pre-audit record and are superseded where they overlap. §3
 
 | Deliverable | Artefact | State |
 | --- | --- | --- |
-| A — scenario dataset | `data/r2_scenarios.jsonl` (348 audited, of 720 built) | **done**, human-audited (§3G) |
+| A — scenario dataset | `data/r2_scenarios.jsonl` (321 audited + contested-dropped, of 720 built) | **done**, human-audited (§3G) |
 | B — tier backends | `cogniwatt/dialogue/backends.py` | **done**, unexercised |
 | C — measurement | `scripts/r2_measure.py` | **done**, mock-verified |
 | C — analysis | `scripts/r2_analyze.py` | **done**, estimators unit-tested |
@@ -214,41 +216,48 @@ defensible. **None of the 31 is re-keyed** — adjudicating them means choosing
 between readings three people already split on, which is contestable for
 exactly the reason the core failed. Dropping needs no adjudication.
 
-### The numbers R1 trains on (`data/dialogue_measured.npz`, `trained_on: audited_348`)
+### The numbers R1 trains on (`data/dialogue_measured.npz`, `trained_on: audited_321_contested_dropped`)
 
-First repeat only; cluster bootstrap over the **29 surviving cores**, so the
-intervals are wider than §3A's — correctly, since 12 permutations of one
-contrast are one fact about the model, not twelve.
+Two exclusions, both applied to every tier: the human audit (29 cores) and
+the contested receptacle forms of `already_satisfied` (§3d — the audit
+corroborated that rule when `mug_already`, shown under exactly that form, came
+back undecidable). The result is **321 items, identical for all four tiers**,
+107 per k. First repeat only; cluster bootstrap over the **29 surviving
+cores**, so the intervals are wider than §3A's — correctly, since 12
+permutations of one contrast are one fact about the model, not twelve.
 
 | tier | k=2 | k=3 | k=4 | pooled | 95 % CI | was (§3A) | Δ | rho | gamma | gamma CI |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `think_tiny` | 0.491 | 0.371 | 0.328 | **0.397** | [0.342, 0.454] | 0.423 | −0.026 | 0.089 | **0.855** | [0.815, 0.906] |
-| `think_big` | 0.578 | 0.491 | 0.431 | **0.500** | [0.397, 0.603] | 0.603 | −0.103 | 0.294 | **0.621** | [0.533, 0.714] |
+| `think_tiny` | 0.495 | 0.393 | 0.327 | **0.405** | [0.346, 0.467] | 0.423 | −0.018 | 0.081 | **0.867** | [0.827, 0.919] |
+| `think_big` | 0.607 | 0.523 | 0.449 | **0.526** | [0.415, 0.636] | 0.603 | −0.077 | 0.277 | **0.638** | [0.547, 0.736] |
 | `offload` (7B) | 0.804 | 0.776 | 0.794 | **0.791** | [0.703, 0.873] | 0.782 | +0.009 | 0.478 | **0.444** | [0.319, 0.596] |
 | `think_big_q8` (ablation) | 0.570 | 0.495 | 0.374 | **0.480** | [0.369, 0.592] | 0.592 | −0.112 | 0.259 | 0.657 | [0.573, 0.750] |
 
-Gradient spread **0.395** (was 0.359). The 7B's flat-in-k result holds
-(0.804 / 0.776 / 0.794). The 3B lands on exactly 0.500 on items three people
-found unanimous, and the 7B stays ~9 points under the ~0.88 ceiling bar (§3B).
-**Cleaning the dataset moved the local tiers down, not up.** gamma keeps its
-monotone-in-scale ordering (0.855 → 0.621 → 0.444); the ICC bootstrap is also
-over the 29 cores, and the 3B's gamma interval no longer excludes the Q8
-ablation's — the two builds are indistinguishable on this subset, which is
-§3E's conclusion restated with honest error bars.
+Gradient spread **0.386** (was 0.359), now computed on one item set. The 7B's
+flat-in-k result holds (0.804 / 0.776 / 0.794) and it stays ~9 points under
+the ~0.88 ceiling bar (§3B). **Cleaning the dataset moved the local tiers
+down, not up.** gamma keeps its monotone-in-scale ordering
+(0.867 → 0.638 → 0.444); the ICC bootstrap is also over the 29 cores, and the
+3B's gamma interval no longer excludes the Q8 ablation's — the two builds are
+indistinguishable on this subset, which is §3E's conclusion restated with
+honest error bars.
 
-`n_samples` in the artefact is 116 per k for the local tiers and **107** for
-`offload`, because the 7B and the Q8 ablation were measured on the 660-item
-contested-dropped set (§3d) and never saw the 27 receptacle-form scenarios of
-the three surviving `already_satisfied` cores. So for those two tiers the
-audited subset is audit *and* contested drop already. Applying the contested
-drop to the local tiers as well (321 items for every tier) moves `think_big`
-to 0.526 and `think_tiny` to 0.405 and nothing else — the conclusion does not
-depend on that choice, and the artefact follows R1's reply 7 (audit only).
+Why not audit alone (348)? Because `offload` and `think_big_q8` were measured
+on the 660-item contested-dropped set and never saw the 27 receptacle-form
+scenarios of the three surviving `already_satisfied` cores. An audit-only
+artefact therefore scores the local tiers on 27 items the 7B was never shown,
+and the gradient — the project's headline comparison — comes out across
+non-identical item sets (0.395 on each tier's own subset vs 0.386 on the
+common 321). The difference is 0.009 of spread; the exposure ("were your tiers
+scored on the same questions?") is not worth it. The audit-only figures
+(`think_big` 0.500, `think_tiny` 0.397) stay in the artefact's `subsets` block
+as `audited_348`, beside `all_660_contested_dropped`, so both are one lookup
+away and neither can be mistaken for the trained-on set.
 
 ### Human-hard and model-hard are different axes
 
-Accuracy split by whether the core passed the audit (first repeat, every raw
-row, so the 7B's "passed" cell is the 321-item pool):
+Accuracy split by whether the core passed the three-rater audit (first
+repeat, every raw row; the 7B's "passed" cell is therefore the 321-item pool):
 
 | tier | audit-passed | audit-failed |
 | --- | --- | --- |
@@ -263,9 +272,9 @@ they fail on expressions three independent people resolve identically. This
 closes the strongest objection available to a reviewer (*"your models look bad
 because your dataset is ambiguous"*) and belongs beside the flat-in-k result:
 the failure is pragmatic inference on clear items, not confusion on unclear
-ones. (R1's reply 7 gives 0.537 / 0.623 for the 3B from a different
-denominator; the direction is identical, and the chapter should carry one set —
-these are the ones the artefact's `subsets` block records.)
+ones. (R1's reply 7 quoted 0.537 / 0.623 for the 3B; reply 8 traced that to
+the *two-rater* verdict file, i.e. a 39-core split that no longer exists.
+These are the figures for the chapter.)
 
 ### What the audit cost, per family
 
@@ -279,11 +288,13 @@ these are the ones the artefact's `subsets` block records.)
 
 `proximity` and `exclusion` are effectively gone: one core each, so any
 per-family claim about them is unsupportable and the family rows in §3D's
-taxonomy are reported for completeness only. `already_satisfied` (3 cores,
-and its receptacle forms unmeasured for the 7B) carries the same note. Noun
-balance also broke — `mug` keeps 2 cores against 6 for `bowl` and `cushion` —
-which the shortcut guards tolerate (position and colour remain undetectable,
-target-is-longest at chance) but a per-noun figure should not be drawn.
+taxonomy are reported for completeness only. `already_satisfied` is thinner
+still — 3 cores, and with the contested receptacle forms removed only the
+*"put the X away"* form remains, **9 items in the trained-on set** — so it is
+reported for completeness and nothing may be cited from it. Noun balance also
+broke — `mug` keeps 2 cores against 6 for `bowl` — which the shortcut guards
+tolerate (position and colour remain undetectable, target-is-longest at
+chance) but a per-noun figure should not be drawn.
 
 ### A bug the audit exposed in the build
 
@@ -294,18 +305,28 @@ became `mug_afford`; the raw table had it as `mug_already`, a dropped core —
 and `r2_analyze.py --scenarios` would have scored dropped-core responses as
 the audited set without an error. The filter now runs after id assignment,
 like `--drop-contested` always did, and
-`test_audit_filter_keeps_ids_aligned_with_raw_table` pins it. The build's
+`test_audit_filter_keeps_ids_aligned_with_raw_table` pins it — against the
+real raw table, not a reconstruction, which is what lets it fail. The build's
 own docstring had already stated the rule; the audit path just did not follow
 it.
+
+For the chapter's methods, not just this changelog: this is the **fourth**
+silent, plausible-looking failure of the same shape across both workstreams —
+`lambda_cloud` absent from a stored reward config, `net_quality` not reaching
+the evaluation env, the dialogue artefact not reaching it either, and now ids
+misaligned against the raw table. None of them broke anything; every one was
+caught by a check that compared two things that should have agreed. That is
+the argument for the cross-checks, and it belongs in the write-up.
 
 ### Provenance in the artefact
 
 `meta_json` now carries `audit` (κ, raw agreement, annotator count, cores
 retained, the rule applied) and `subsets` with the pooled accuracy, per-k
-accuracy, gamma and intervals for **both** `audited_348` and
-`all_660_contested_dropped`, with `trained_on` naming the first. No figure
-can be built from the wrong subset by accident, and a reader can see the
-pre-audit numbers without leaving the file.
+accuracy, gamma and intervals for all three of `audited_321_contested_dropped`
+(trained on), `audited_348` (audit only) and `all_660_contested_dropped`
+(pre-audit), with `trained_on` naming the first. No figure can be built from
+the wrong subset by accident, and a reader can see every earlier number
+without leaving the file. `n_samples` is a uniform 107 × 3 per tier.
 
 **Methods-section limitation, stated plainly:** two of the three annotators
 are project members. Neither had read `data/r2_scenarios.jsonl` (which

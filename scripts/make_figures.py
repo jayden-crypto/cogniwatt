@@ -72,13 +72,13 @@ def policy_heatmap(tag: str, path: str, n_episodes: int = 4000):
 #: The canonical policy for the single-policy figures. `entanneal_s0` is the
 #: current best configuration (entropy annealed 0.12 -> 0.01: converges on every
 #: seed *and* sharpens; see docs/r1_stability.md).
-CANONICAL = "entanneal_s0"
+CANONICAL = "r2final321_s0"
 
 #: fig1 is a learning-curve plot, so it has to stay readable. The stability
 #: sweep contributes 40+ runs; those belong in fig6, not here. Show the method
 #: and its ablations only.
-FIG1_TAGS = ("entanneal_s0", "main_s0", "ablate_devcond_s0", "ablate_mask_s0",
-             "ablate_shaping_s0", "ablate_capdrop_s0")
+FIG1_TAGS = ("r2final321_s0", "entanneal_s0", "ablate_devcond_s0",
+             "ablate_mask_s0", "ablate_shaping_s0", "ablate_capdrop_s0")
 
 
 def main():

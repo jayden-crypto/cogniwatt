@@ -1,30 +1,30 @@
 {
-  "n_scenarios": 348,
+  "n_scenarios": 321,
   "n_cores": 29,
   "by_k": {
-    "2": 116,
-    "3": 116,
-    "4": 116
+    "2": 107,
+    "3": 107,
+    "4": 107
   },
   "by_noun": {
     "mug": 24,
-    "book": 60,
+    "book": 51,
     "bottle": 60,
     "bowl": 72,
-    "remote": 60,
-    "cushion": 72
+    "remote": 51,
+    "cushion": 63
   },
   "by_receptacle": {
-    "drawer": 120,
+    "drawer": 111,
     "sink": 48,
-    "shelf": 72,
+    "shelf": 54,
     "bin": 72,
     "table": 36
   },
   "by_family": {
     "affordance": 48,
     "state_blocks": 72,
-    "already_satisfied": 36,
+    "already_satisfied": 9,
     "ownership": 24,
     "condition": 48,
     "exclusion": 12,
@@ -34,58 +34,58 @@
     "purpose_fit": 36
   },
   "by_difficulty": {
-    "medium": 180,
-    "easy": 60,
+    "medium": 171,
+    "easy": 42,
     "hard": 108
   },
   "by_form_idx": {
-    "0": 165,
-    "1": 87,
-    "2": 87,
+    "0": 156,
+    "1": 78,
+    "2": 78,
     "3": 9
   },
   "true_idx_by_k": {
     "2": {
-      "0": 58,
-      "1": 58
+      "0": 52,
+      "1": 55
     },
     "3": {
-      "1": 40,
-      "2": 40,
-      "0": 36
+      "1": 37,
+      "2": 37,
+      "0": 33
     },
     "4": {
-      "0": 29,
-      "1": 29,
-      "2": 29,
+      "0": 26,
+      "1": 26,
+      "2": 26,
       "3": 29
     }
   },
   "true_color": {
-    "black": 66,
-    "striped": 66,
-    "red": 54,
+    "black": 57,
+    "striped": 60,
+    "red": 48,
     "blue": 54,
-    "green": 54,
-    "white": 54
+    "green": 51,
+    "white": 51
   },
   "target_is_longest_rate": {
     "2": {
-      "observed": 0.5086,
+      "observed": 0.5047,
       "chance": 0.5
     },
     "3": {
-      "observed": 0.3017,
+      "observed": 0.3084,
       "chance": 0.3333
     },
     "4": {
-      "observed": 0.2069,
+      "observed": 0.2243,
       "chance": 0.25
     }
   },
   "always_zero_accuracy": {
-    "2": 0.5,
-    "3": 0.3103,
-    "4": 0.25
+    "2": 0.486,
+    "3": 0.3084,
+    "4": 0.243
   }
 }

@@ -58,17 +58,24 @@ answers a question rather than reporting effort:
 | 1 | Multi-seed ablations under the canonical annealed config | R1 | running |
 | 2 | `lambda_cloud` sweep trained at 5 prices × 3 seeds | R1 | running |
 | 3 | Regenerate `docs/r1_report.html` | R1 | pending the two above |
-| 4 | Integrate R2's `dialogue_measured.npz` and retrain on measured constants | R1, blocked on R2 | not started |
-| 5 | Integrate `r2_rtx3060_profile.json` via `apply_measured_profile` | R1, blocked on R2 | not started |
-| 6 | Wire R2's 6×6 `r2_color_similarity.npy` into `tasks.COLOR_SIM` | R1, blocked on R2 | not started |
+| 4 | Integrate R2's `dialogue_measured.npz` and retrain on measured constants | R1 | **done** — trained on `audited_321_contested_dropped`, 6 seeds per condition |
+| 5 | Integrate `r2_rtx3060_profile.json` via `apply_measured_profile` | R1 | **done** — measured costs replace the roofline on that device (`think_big` 519.6 ms → 34.0 ms, 48.9 J → 1.67 J); the 7B is refused as an anchor via their `valid_device_anchor` flag |
+| 6 | Wire R2's 6×6 `r2_color_similarity.npy` into `tasks.COLOR_SIM` | R1 | **done, as a deletion** — their measurement showed errors do not track colour similarity (excess −0.00006 over 6 672 errors), so `COLOR_SIM` is now uniform and their perceptual matrix stays unwired |
+| 7 | Human audit of the authored cores | R1 + R2 | **done** — 3 annotators, 29/60 cores retained, Fleiss κ 0.592 |
+| 8 | Final report regeneration | R1 | **done** — `r1_report.html` and `r1_results.md` are generated from the CSVs |
 
-**Items 4–6 are the project's critical path and none of them can start until
-R2 delivers.** Every dialogue constant in the simulation is still an R1
-placeholder: `TIER_ACCURACY`, `EVIDENCE_DECAY`, `DEFAULT_ASR_WER` and the colour
-confusability matrix. Until they are replaced, the results are *structurally*
-realistic but not *empirically* grounded, and the retrain on measured constants
-is what converts the headline from "plausible simulation" into "grounded in
-measurement". The handoff asks for the artefact by Lab 8.
+**The critical path is closed.** Every dialogue constant is now measured:
+`TIER_ACCURACY` and `EVIDENCE_DECAY` from 19 800 queries across three model
+tiers on one llama.cpp stack, `DEFAULT_ASR_WER` (and the referent-recovery rate
+that replaced it) from a Whisper pipeline over 721 synthesised clips, and the
+colour matrix measured and then *removed* because the assumption behind it was
+false. The headline is grounded in measurement, on a scenario set three humans
+independently audited.
+
+The one remaining limitation is stated rather than fixed: the `ask` channel's
+accuracy is still an R1 placeholder (0.97, scaled by measured recovery). It is
+the single number the degeneracy result is most exposed to, and it is recorded
+as such in `meta_json` under `ask_provenance`.
 
 ## Part D — risk register
 

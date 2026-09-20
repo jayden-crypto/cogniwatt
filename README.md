@@ -168,17 +168,24 @@ calls happen only in the Tier-2 photoreal demo and final evaluation.
 - [ ] R2 measured dialogue constants + RTX 3060 compute profile
 - [ ] Tier-2 AI2-THOR port (stretch goal, RTX 3060 only — drop if time is short)
 
-### Current headline (8 seeds, current reward, `entanneal`)
+### Current headline (6 seeds, R2's audited artefact)
 
-| split | PPO | `greedy_value` |
-| --- | --- | --- |
-| train | 0.909 ± 0.004 success, −0.30 ± 0.07 return | 0.898, −0.58 |
-| held-out | 0.898 ± 0.003 success, −0.47 ± 0.06 return | 0.892, −0.64 |
+Trained on `data/dialogue_measured.npz`, `trained_on: audited_321_contested_dropped`
+— all four evidence tiers measured on the same 321 human-verified scenarios.
 
-The learned policy wins on both metrics at **equal information spend** (2.19
-queries/episode vs 2.17). Margins are ~1 point of success — smaller than the
-previously reported ~6, which was measured before `lambda_cloud` priced cloud
-calls. See `docs/r1_stability.md` §6.3.
+| condition | PPO | `greedy_value` | `always_ask` |
+| --- | --- | --- | --- |
+| nominal | 0.968 ± 0.001 | 0.964 | 0.968 |
+| **offline + alone** | **0.507 ± 0.013** | 0.316 | 0.374 |
+| offline + alone, held-out | **0.440 ± 0.008** | 0.276 | 0.374 |
+
+With a cooperative, always-available human the problem is **degenerate**: one
+clarifying question reaches confidence, no model tier can, and every agent ties.
+On-device inference is 1 % of evidence purchased. Once the human is absent and
+the link is down, no single action suffices, the agent must sequence cheap
+evidence under a budget, and the learned policy beats the strong heuristic by
+**19.1 points of success** and the best baseline by **1.75 return**.
+
 
 > **Note on the legacy results.** `results/runs_legacy/` and
 > `results/eval_legacy/` hold the pre-recalibration run and evaluation. They
