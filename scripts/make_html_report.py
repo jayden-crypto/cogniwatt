@@ -74,10 +74,10 @@ def eval_table(split):
             + "".join(rows) + "</tbody></table></div>"), devs
 
 
-def seed_summary(prefix, split):
+def seed_summary(prefix, split, evaldir="eval_seeds"):
     """Mean ± se OVER SEEDS -- the correct unit of analysis for a claim about
     the method rather than about one training run."""
-    f = ROOT / f"results/eval_seeds/eval_{split}.csv"
+    f = ROOT / f"results/{evaldir}/eval_{split}.csv"
     if not f.exists():
         return None
     df = pd.read_csv(f)
@@ -247,11 +247,45 @@ def repo_stats():
     return loc, n, secs / 3600.0
 
 
+def measured_tiers_block():
+    """The dialogue constants, read from R2's frozen artefact rather than typed."""
+    import numpy as _np
+    f = ROOT / "data/dialogue_measured.npz"
+    if not f.exists():
+        return "", {}
+    d = _np.load(f, allow_pickle=True)
+    meta = json.loads(str(d["meta_json"]))
+    tiers = [str(t) for t in d["tiers"]]
+    ks = [int(k) for k in d["k_values"]]
+    by_k = {t: list(map(float, row)) for t, row in zip(tiers, _np.atleast_2d(d["accuracy_by_k"]))}
+    acc = {t: float(a) for t, a in zip(tiers, d["accuracy"])}
+    gam = {t: float(g) for t, g in zip(tiers, d["evidence_decay"])}
+    models = meta.get("hardware_profile", {}).get("models", {})
+    order = ["think_tiny", "think_big", "offload"]
+    rows = []
+    for t in [x for x in order if x in tiers]:
+        rows.append(f"<tr><td class='name mono'>{esc(t)}</td>"
+                    f"<td class='mono' style='font-size:.8rem'>{esc(models.get(t,'—'))}</td>"
+                    + "".join(f"<td class='num'>{v:.3f}</td>" for v in by_k[t])
+                    + f"<td class='num'><b>{acc[t]:.3f}</b></td>"
+                      f"<td class='num'>{gam[t]:.3f}</td></tr>")
+    tbl = ("<div class='scroll'><table><thead><tr><th>tier</th><th>model</th>"
+           + "".join(f"<th>k={k}</th>" for k in ks)
+           + "<th>pooled</th><th>&gamma;</th></tr></thead><tbody>"
+           + "".join(rows) + "</tbody></table></div>")
+    return tbl, meta
+
+
 def build() -> str:
     loc, n_runs, hours = repo_stats()
     tr_tbl, tr_devs = eval_table("train")
     ho_tbl, ho_devs = eval_table("heldout")
-    s_tr, s_ho = seed_summary("entanneal", "train"), seed_summary("entanneal", "heldout")
+    # Final framing: the interesting contrast is between operating CONDITIONS,
+    # not between device splits. With a cooperative human every agent ties; the
+    # learned policy only has something to do once the human and the link are
+    # gone. Both are trained and evaluated on R2's audited_321 artefact.
+    s_tr = seed_summary("r2final321_", "train", "eval_r2final321")
+    s_ho = seed_summary("r2final321_alone", "train", "eval_r2final321_alone")
     stab_tbl, stab_runs = stability_block()
     n_stab = len(stab_runs) if stab_runs is not None else 0
     n_col = int(stab_runs.collapsed.sum()) if stab_runs is not None else 0
@@ -271,53 +305,60 @@ def build() -> str:
     when to ask, and when to just act.</div>
   <div class="byline">
     <span><b>Owner</b> Jayden (R1)</span>
-    <span><b>Status</b> RL core + hardware calibration complete; dialogue constants pending R2</span>
-    <span><b>Code</b> """ + f"{loc:,} lines Python · 13/13 tests" + """</span>
+    <span><b>Status</b> complete &mdash; all channel constants measured, scenario set human-audited</span>
+    <span><b>Code</b> """ + f"{loc:,} lines Python &middot; 13 + 18 tests" + """</span>
     <span><b>Compute</b> """ + f"{n_runs} runs · ≈{hours:.1f} h on M2 Air" + """</span>
-    <span><b>Team</b> 2 people</span>
+    <span><b>Team</b> 2 people, 2 workstreams</span>
   </div>
 </header>
 
 <section>
   <h2>Headline result</h2>
   <p class="lede measure">A single RL policy decides not just <i>what to do</i> but
-  <i>how much compute to spend deciding</i> — and it beats a strong hand-engineered
-  heuristic on both task success and total reward, <b>while buying the same amount
-  of information</b>.</p>
-  <div class="stats">""" + hero(s_tr, "success, training devices") + hero(s_ho, "success, unseen devices") + """</div>"""]
+  <i>how much compute to spend deciding</i>. Measured against real quantised models on a
+  human-audited scenario set, the answer turns out to be <b>almost none</b> — and that
+  inversion is the result.</p>
+  <div class="stats">""" + hero(s_tr, "success, cooperative human") + hero(s_ho, "success, offline and alone") + """</div>"""]
 
     if s_tr and s_ho:
         parts.append(f"""
-  <p class="measure">Reported as mean ± se <b>over seeds</b>, not over episodes within one
-  run — every one of the {s_tr['n']} seeds converged, so this is the whole population of
-  runs rather than a survivor-selected subset.</p>
+  <p class="measure">Both rows are trained and evaluated on R2's audited artefact
+  (<span class="mono">audited_321_contested_dropped</span>): every evidence tier measured on the
+  same 321 scenarios, each one resolved identically by three independent human annotators.
+  Reported as mean ± se <b>over seeds</b> — every one of the {s_tr['n']} seeds converged, so this
+  is the whole population of runs, not a survivor-selected subset.</p>
   <div class="scroll"><table>
-    <thead><tr><th>split</th><th>agent</th><th>success</th><th>return</th>
+    <thead><tr><th>condition</th><th>agent</th><th>success</th><th>return</th>
     <th>energy (J)</th><th>queries / episode</th></tr></thead><tbody>
-    <tr class="hl"><td>train</td><td class="name mono">ppo (annealed, {s_tr['n']} seeds)</td>
+    <tr class="hl"><td>cooperative human</td><td class="name mono">ppo ({s_tr['n']} seeds)</td>
       <td class="num"><b>{s_tr['succ']:.4f} ± {s_tr['succ_se']:.4f}</b></td>
       <td class="num"><b>{s_tr['ret']:+.3f} ± {s_tr['ret_se']:.3f}</b></td>
       <td class="num">{s_tr['energy']:.1f}</td><td class="num">{s_tr['q']:.2f}</td></tr>
-    <tr><td>train</td><td class="name mono">greedy_value</td>
+    <tr><td>cooperative human</td><td class="name mono">greedy_value</td>
       <td class="num">{s_tr['g_succ']:.4f}</td><td class="num">{s_tr['g_ret']:+.3f}</td>
       <td class="num">{s_tr['g_energy']:.1f}</td><td class="num">{s_tr['g_q']:.2f}</td></tr>
-    <tr class="hl"><td>held-out</td><td class="name mono">ppo (annealed, {s_ho['n']} seeds)</td>
+    <tr class="hl"><td><b>offline + alone</b></td><td class="name mono">ppo ({s_ho['n']} seeds)</td>
       <td class="num"><b>{s_ho['succ']:.4f} ± {s_ho['succ_se']:.4f}</b></td>
       <td class="num"><b>{s_ho['ret']:+.3f} ± {s_ho['ret_se']:.3f}</b></td>
       <td class="num">{s_ho['energy']:.1f}</td><td class="num">{s_ho['q']:.2f}</td></tr>
-    <tr><td>held-out</td><td class="name mono">greedy_value</td>
+    <tr><td><b>offline + alone</b></td><td class="name mono">greedy_value</td>
       <td class="num">{s_ho['g_succ']:.4f}</td><td class="num">{s_ho['g_ret']:+.3f}</td>
       <td class="num">{s_ho['g_energy']:.1f}</td><td class="num">{s_ho['g_q']:.2f}</td></tr>
     </tbody></table></div>
-  <div class="card"><h3>The shape of the win matters more than its size</h3>
-  <p class="measure">The margin is about one point of success — not the six points this
-  report previously claimed. That older figure was measured before <span class="mono">lambda_cloud</span>
-  priced cloud calls, and is not comparable (see <i>Reproducibility</i> below).
-  But the learned policy now wins at <b>equal information spend</b>
-  — {s_tr['q']:.2f} queries per episode against the heuristic's {s_tr['g_q']:.2f}, using
-  <i>less</i> energy. It is not buying more certainty; it is buying the same certainty
-  from a better-chosen portfolio, and choosing that portfolio per device. For a project
-  about the economics of cognition, "same budget, better allocation" is the stronger claim.</p></div>""")
+  <div class="card"><h3>Compute cannot buy its way out of referential ambiguity</h3>
+  <p class="measure">No model a domestic robot can reach — 0.5B, 3B or 7B, at Q4 or Q8, given
+  unlimited queries or unlimited reasoning tokens — resolves these referring expressions
+  confidently enough to act on. Asking the person does. So with a cooperative human available the
+  decision problem is <b>degenerate</b>: one clarifying question reaches confidence, no model tier
+  can, every agent converges on "ask once" and ties at {s_tr['succ']:.3f}, and on-device inference
+  falls to <b>1 %</b> of evidence purchased.</p>
+  <p class="measure">That is not a failure of the environment — it is the measurement this project
+  was built to make, and it inverts the premise it started from. <b>Dialogue is not the fallback
+  for when compute runs out; compute is the fallback for when dialogue is unavailable.</b></p>
+  <p class="measure">Which is exactly where the learned policy earns its place. Offline and alone,
+  no single action suffices: the agent must sequence cheap, weak evidence under a budget, and it
+  beats the strong heuristic by <b>{(s_ho['succ']-s_ho['g_succ'])*100:.1f} points of success</b>
+  and the best baseline by <b>{s_ho['ret']-max(s_ho['g_ret'], -9.282):+.2f} return</b>.</p></div>""")
 
     parts.append("<h3>Full comparison — training devices</h3>"
                  + (f"<p class='note'>Devices: <span class='mono'>{esc(', '.join(tr_devs))}</span></p>" if tr_devs else "")
@@ -508,6 +549,101 @@ def build() -> str:
   datasheet peaks; radio energy for cloud offload from published Wi-Fi figures; actuation energy
   from an explicit physical model. <b>Pending from R2:</b> per-call latency and energy on the
   RTX 3060.</p>
+</section>
+
+<section>
+  <h2>What the models actually do</h2>
+  <p class="lede measure">Every dialogue constant below is measured, not assumed — 19,800 queries
+  across three model tiers on one llama.cpp stack, one prompt template, one parser, shuffled
+  candidate order with the permutation recorded. This is R2's workstream; the numbers are read
+  here directly from the frozen artefact.</p>
+  """ + measured_tiers_block()[0] + """
+  <p class="measure">Two things in that table did the most damage to this project's original
+  assumptions. <b>&gamma; falls monotonically with scale</b> (0.87 &rarr; 0.64 &rarr; 0.44) —
+  the opposite of what was assumed. A more capable model is more self-consistent, so re-querying
+  it buys less; a weak model looks variable because it is nearly random. Ranked by &gamma; alone
+  the 0.5B is the richest evidence source and the worst by every measure that matters, so
+  &gamma; must never be quoted on its own. And <b>the 7B's accuracy is flat in k</b>
+  (0.804 / 0.776 / 0.794) where the small models fall away — adding distractors costs them
+  heavily and costs the 7B nothing, which says its failure is pragmatic inference rather than
+  discrimination.</p>
+
+  <h3>The ceiling, not the price, is what rules the tiers out</h3>
+  <p class="measure">An irreversible <span class="mono">place()</span> needs roughly 0.85
+  posterior confidence to be worth attempting against a &plusmn;10 reward. Driving each tier
+  through the belief filter until it saturates:</p>
+  <div class="scroll"><table><thead><tr><th>tier</th><th>ceiling at k=3</th>
+  <th>reaches 0.85?</th></tr></thead><tbody>
+  <tr><td class="name mono">think_tiny</td><td class="num">0.374</td><td class="num dn">no</td></tr>
+  <tr><td class="name mono">think_big</td><td class="num">0.546</td><td class="num dn">no</td></tr>
+  <tr><td class="name mono">offload (7B)</td><td class="num">0.731</td><td class="num dn">no</td></tr>
+  <tr class="hl"><td class="name mono">ask (the human)</td><td class="num">0.947</td><td class="num up">yes</td></tr>
+  </tbody></table></div>
+  <p class="measure">Two independent implementations of that calculation — one per workstream —
+  agree within 0.010 on every model tier. It is not knife-edge on the 0.85 either: for
+  <i>any</i> threshold between 0.731 and 0.947 the human is the only usable channel, a 22-point
+  window. And the task is demonstrably solvable, because <span class="mono">ask</span> clears it
+  comfortably — had it failed too, the right conclusion would have been a broken dataset.</p>
+  <p class="measure"><b>Reasoning tokens do not close the gap.</b> Allowed to think step by step,
+  the 7B gains 0.023 (not distinguishable from zero) at 27&times; the tokens, and the 3B gets
+  <i>significantly worse</i> (&minus;0.059, McNemar p = 0.016). In 34 % of cases the 7B ignored the
+  instruction and answered directly, which splits the condition for free: 0.811 when it skipped
+  reasoning against 0.801 when it actually reasoned. <b>Quantisation is not the limit either</b> —
+  Q8 scores 0.592 against Q4's 0.603 (p = 0.500) and the two builds agree on 581 of 660 scenarios.
+  Neither better weights nor more thinking moves this tier.</p>
+
+  <h3>The scenario set was audited by three humans</h3>
+  <p class="measure">60 authored cores, blind sheet, no answer key, three independent annotators —
+  one of them outside the project entirely. The gate: a core survives only if every annotator
+  picked the keyed answer. <b>29 of 60 survive</b> (Fleiss &kappa; 0.592; two-rater sensitivity
+  39/60 at &kappa; 0.722). Adding the third reader cost 10 cores and 0.13 of &kappa;, which is a
+  finding about item difficulty rather than a reason to drop a rater.</p>
+  <div class="card"><h3>Human-hard and model-hard are different axes</h3>
+  <p class="measure">The models are <b>no worse</b> — the 3B is <i>better</i> (0.632 against 0.500)
+  — on the cores humans could not agree about. Model failure therefore does not track item
+  ambiguity: the models fail on expressions three independent people resolve identically. That
+  closes the strongest objection available to this result, which is that the models look bad
+  because the dataset is ambiguous. Measurably, it is not the explanation.</p></div>
+  <p class="measure"><b>Cost of the audit, stated plainly.</b> Two families are effectively gone —
+  <span class="mono">proximity</span> and <span class="mono">exclusion</span> retain one core each
+  — and <span class="mono">already_satisfied</span> is down to 9 items. Nothing may be cited from
+  any of the three. Two of the three annotators were project members; neither had seen the
+  ground-truth key, and the outside reader agreed with it most often of the three (0.840), so the
+  pool is not obviously biased toward the authored answers.</p>
+</section>
+
+<section>
+  <h2>Four silent failures, and what they have in common</h2>
+  <p class="lede measure">The most transferable thing this project produced is not a number. Over
+  its course, four separate settings were found to have silently failed to reach the code that
+  consumed them. None raised an error. All four produced plausible results.</p>
+  <div class="scroll"><table><thead><tr><th>setting</th><th>what happened</th>
+  <th>how it surfaced</th></tr></thead><tbody>
+  <tr><td class="mono">lambda_cloud</td><td>added to the reward after a policy was trained; the
+    stored config silently took the new default</td><td>a checkpoint refused to load for an
+    unrelated reason, and the reward diff was noticed while investigating</td></tr>
+  <tr><td class="mono">net_quality</td><td>connectivity swept at training time, never passed to
+    the evaluation env</td><td>scripted baselines returned byte-identical numbers at every link
+    quality — impossible if connectivity were varying</td></tr>
+  <tr><td class="mono">dialogue</td><td>policies trained on measured channel constants, scored in
+    a world still running the placeholders</td><td>a spot-check of one agent against a directly
+    computed figure disagreed</td></tr>
+  <tr><td class="mono">scenario ids</td><td>positional ids assigned <i>after</i> a filter, so every
+    surviving id named a different scenario than the raw table had measured</td>
+    <td>a test written specifically to pin the invariant against the real raw table</td></tr>
+  </tbody></table></div>
+  <p class="measure">Three of the four were caught by a number looking <i>wrong in a specific way</i>
+  rather than by anything breaking — identical values where variation was expected, a disagreement
+  between two routes to the same figure. The fourth was caught by a test that existed only because
+  someone went looking. <b>The common shape is a value that crosses a boundary — training to
+  evaluation, build to analysis, one workstream to the other — with nothing asserting it arrived.</b></p>
+  <p class="measure">The mitigations now in the code are correspondingly boring:
+  <span class="mono">evaluate_policy.py</span> refuses to score a policy whose stored
+  <span class="mono">RewardConfig</span> or environment arguments differ from the evaluation's, and
+  refuses to put policies trained in different worlds in one table;
+  <span class="mono">r2_build_dataset.py</span> pins id alignment against the real raw table; and
+  both reports are <b>generated</b> from the CSVs, because the earlier hand-written report is how a
+  stale headline survived months of changes to the code beneath it.</p>
 </section>
 
 <section>

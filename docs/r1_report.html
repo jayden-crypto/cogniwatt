@@ -142,51 +142,58 @@ footer{border-top:1px solid var(--rule);padding-top:22px;color:var(--ink-3);font
     when to ask, and when to just act.</div>
   <div class="byline">
     <span><b>Owner</b> Jayden (R1)</span>
-    <span><b>Status</b> RL core + hardware calibration complete; dialogue constants pending R2</span>
-    <span><b>Code</b> 10,758 lines Python · 13/13 tests</span>
+    <span><b>Status</b> complete &mdash; all channel constants measured, scenario set human-audited</span>
+    <span><b>Code</b> 10,894 lines Python &middot; 13 + 18 tests</span>
     <span><b>Compute</b> 176 runs · ≈20.0 h on M2 Air</span>
-    <span><b>Team</b> 2 people</span>
+    <span><b>Team</b> 2 people, 2 workstreams</span>
   </div>
 </header>
 
 <section>
   <h2>Headline result</h2>
   <p class="lede measure">A single RL policy decides not just <i>what to do</i> but
-  <i>how much compute to spend deciding</i> — and it beats a strong hand-engineered
-  heuristic on both task success and total reward, <b>while buying the same amount
-  of information</b>.</p>
-  <div class="stats"><div class='stat hero'><div class='v num'>0.909</div><div class='lbl'>success, training devices<br><span class='mono'>±0.004</span> over 8 seeds · heuristic 0.898</div></div><div class='stat hero'><div class='v num'>0.898</div><div class='lbl'>success, unseen devices<br><span class='mono'>±0.002</span> over 8 seeds · heuristic 0.892</div></div></div>
+  <i>how much compute to spend deciding</i>. Measured against real quantised models on a
+  human-audited scenario set, the answer turns out to be <b>almost none</b> — and that
+  inversion is the result.</p>
+  <div class="stats"><div class='stat hero'><div class='v num'>0.968</div><div class='lbl'>success, cooperative human<br><span class='mono'>±0.001</span> over 6 seeds · heuristic 0.964</div></div><div class='stat hero'><div class='v num'>0.507</div><div class='lbl'>success, offline and alone<br><span class='mono'>±0.013</span> over 6 seeds · heuristic 0.316</div></div></div>
 
-  <p class="measure">Reported as mean ± se <b>over seeds</b>, not over episodes within one
-  run — every one of the 8 seeds converged, so this is the whole population of
-  runs rather than a survivor-selected subset.</p>
+  <p class="measure">Both rows are trained and evaluated on R2's audited artefact
+  (<span class="mono">audited_321_contested_dropped</span>): every evidence tier measured on the
+  same 321 scenarios, each one resolved identically by three independent human annotators.
+  Reported as mean ± se <b>over seeds</b> — every one of the 6 seeds converged, so this
+  is the whole population of runs, not a survivor-selected subset.</p>
   <div class="scroll"><table>
-    <thead><tr><th>split</th><th>agent</th><th>success</th><th>return</th>
+    <thead><tr><th>condition</th><th>agent</th><th>success</th><th>return</th>
     <th>energy (J)</th><th>queries / episode</th></tr></thead><tbody>
-    <tr class="hl"><td>train</td><td class="name mono">ppo (annealed, 8 seeds)</td>
-      <td class="num"><b>0.9087 ± 0.0039</b></td>
-      <td class="num"><b>-0.300 ± 0.072</b></td>
-      <td class="num">163.5</td><td class="num">2.19</td></tr>
-    <tr><td>train</td><td class="name mono">greedy_value</td>
-      <td class="num">0.8983</td><td class="num">-0.584</td>
-      <td class="num">168.6</td><td class="num">2.17</td></tr>
-    <tr class="hl"><td>held-out</td><td class="name mono">ppo (annealed, 8 seeds)</td>
-      <td class="num"><b>0.8983 ± 0.0025</b></td>
-      <td class="num"><b>-0.465 ± 0.056</b></td>
-      <td class="num">164.3</td><td class="num">1.83</td></tr>
-    <tr><td>held-out</td><td class="name mono">greedy_value</td>
-      <td class="num">0.8917</td><td class="num">-0.638</td>
-      <td class="num">167.9</td><td class="num">2.00</td></tr>
+    <tr class="hl"><td>cooperative human</td><td class="name mono">ppo (6 seeds)</td>
+      <td class="num"><b>0.9680 ± 0.0005</b></td>
+      <td class="num"><b>+0.295 ± 0.015</b></td>
+      <td class="num">162.3</td><td class="num">1.06</td></tr>
+    <tr><td>cooperative human</td><td class="name mono">greedy_value</td>
+      <td class="num">0.9640</td><td class="num">-0.439</td>
+      <td class="num">163.8</td><td class="num">2.48</td></tr>
+    <tr class="hl"><td><b>offline + alone</b></td><td class="name mono">ppo (6 seeds)</td>
+      <td class="num"><b>0.5070 ± 0.0129</b></td>
+      <td class="num"><b>-7.529 ± 0.221</b></td>
+      <td class="num">165.2</td><td class="num">2.48</td></tr>
+    <tr><td><b>offline + alone</b></td><td class="name mono">greedy_value</td>
+      <td class="num">0.3160</td><td class="num">-24.194</td>
+      <td class="num">314.3</td><td class="num">17.88</td></tr>
     </tbody></table></div>
-  <div class="card"><h3>The shape of the win matters more than its size</h3>
-  <p class="measure">The margin is about one point of success — not the six points this
-  report previously claimed. That older figure was measured before <span class="mono">lambda_cloud</span>
-  priced cloud calls, and is not comparable (see <i>Reproducibility</i> below).
-  But the learned policy now wins at <b>equal information spend</b>
-  — 2.19 queries per episode against the heuristic's 2.17, using
-  <i>less</i> energy. It is not buying more certainty; it is buying the same certainty
-  from a better-chosen portfolio, and choosing that portfolio per device. For a project
-  about the economics of cognition, "same budget, better allocation" is the stronger claim.</p></div>
+  <div class="card"><h3>Compute cannot buy its way out of referential ambiguity</h3>
+  <p class="measure">No model a domestic robot can reach — 0.5B, 3B or 7B, at Q4 or Q8, given
+  unlimited queries or unlimited reasoning tokens — resolves these referring expressions
+  confidently enough to act on. Asking the person does. So with a cooperative human available the
+  decision problem is <b>degenerate</b>: one clarifying question reaches confidence, no model tier
+  can, every agent converges on "ask once" and ties at 0.968, and on-device inference
+  falls to <b>1 %</b> of evidence purchased.</p>
+  <p class="measure">That is not a failure of the environment — it is the measurement this project
+  was built to make, and it inverts the premise it started from. <b>Dialogue is not the fallback
+  for when compute runs out; compute is the fallback for when dialogue is unavailable.</b></p>
+  <p class="measure">Which is exactly where the learned policy earns its place. Offline and alone,
+  no single action suffices: the agent must sequence cheap, weak evidence under a budget, and it
+  beats the strong heuristic by <b>19.1 points of success</b>
+  and the best baseline by <b>+1.75 return</b>.</p></div>
 <h3>Full comparison — training devices</h3><p class='note'>Devices: <span class='mono'>m2_air, orin_nano, orin_nx, pi5</span></p><div class='scroll'><table><thead><tr><th>agent</th><th>success</th><th>return ± se</th><th>energy (J)</th><th>latency (s)</th><th>asks</th><th>tiny / big / cloud</th></tr></thead><tbody><tr><td class='name mono'>oracle</td><td class='num'><b>1.000</b></td><td class='num'>+3.34 ± 0.06</td><td class='num'>154.9</td><td class='num'>16.7</td><td class='num'>0.00</td><td class='num'>0.00 / 0.00 / 0.00</td></tr><tr class="hl"><td class='name mono'>ppo[r2final321_s0]</td><td class='num'><b>0.955</b></td><td class='num'>+0.17 ± 0.15</td><td class='num'>159.1</td><td class='num'>17.7</td><td class='num'>1.00</td><td class='num'>0.07 / 0.00 / 0.01</td></tr><tr><td class='name mono'>greedy_value</td><td class='num'><b>0.960</b></td><td class='num'>-0.33 ± 0.15</td><td class='num'>159.6</td><td class='num'>17.9</td><td class='num'>0.88</td><td class='num'>0.05 / 0.00 / 1.57</td></tr><tr><td class='name mono'>always_ask</td><td class='num'><b>0.957</b></td><td class='num'>+0.24 ± 0.14</td><td class='num'>158.3</td><td class='num'>17.6</td><td class='num'>1.00</td><td class='num'>0.00 / 0.00 / 0.00</td></tr><tr><td class='name mono'>always_offload</td><td class='num'><b>0.749</b></td><td class='num'>-2.82 ± 0.28</td><td class='num'>157.6</td><td class='num'>17.2</td><td class='num'>0.00</td><td class='num'>0.00 / 0.00 / 2.00</td></tr><tr><td class='name mono'>always_big</td><td class='num'><b>0.439</b></td><td class='num'>-14.88 ± 0.42</td><td class='num'>316.8</td><td class='num'>34.5</td><td class='num'>0.00</td><td class='num'>0.00 / 2.69 / 0.00</td></tr><tr><td class='name mono'>always_tiny</td><td class='num'><b>0.433</b></td><td class='num'>-10.42 ± 0.33</td><td class='num'>208.6</td><td class='num'>23.2</td><td class='num'>0.00</td><td class='num'>4.00 / 0.00 / 0.00</td></tr><tr><td class='name mono'>no_think</td><td class='num'><b>0.376</b></td><td class='num'>-9.19 ± 0.31</td><td class='num'>156.1</td><td class='num'>16.8</td><td class='num'>0.00</td><td class='num'>0.00 / 0.00 / 0.00</td></tr><tr><td class='name mono'>random_valid</td><td class='num'><b>0.041</b></td><td class='num'>-30.32 ± 0.18</td><td class='num'>430.2</td><td class='num'>44.2</td><td class='num'>1.17</td><td class='num'>1.29 / 0.94 / 1.40</td></tr><tr><td class='name mono'>random</td><td class='num'><b>0.028</b></td><td class='num'>-31.97 ± 0.18</td><td class='num'>430.0</td><td class='num'>45.5</td><td class='num'>1.27</td><td class='num'>1.37 / 1.40 / 1.35</td></tr></tbody></table></div><h3>Zero-shot transfer to unseen hardware</h3><p class='note'>Devices: <span class='mono'>jetson_nano_2gb, rtx3060</span> — never seen in training. The policy is conditioned only on datasheet features (TOPS, bandwidth, TDP, battery, NPU flag, RAM), never on the cost table.</p><div class='scroll'><table><thead><tr><th>agent</th><th>success</th><th>return ± se</th><th>energy (J)</th><th>latency (s)</th><th>asks</th><th>tiny / big / cloud</th></tr></thead><tbody><tr><td class='name mono'>oracle</td><td class='num'><b>1.000</b></td><td class='num'>+3.34 ± 0.06</td><td class='num'>154.9</td><td class='num'>16.7</td><td class='num'>0.00</td><td class='num'>0.00 / 0.00 / 0.00</td></tr><tr class="hl"><td class='name mono'>ppo[r2final321_s0]</td><td class='num'><b>0.958</b></td><td class='num'>+0.14 ± 0.14</td><td class='num'>162.9</td><td class='num'>17.6</td><td class='num'>1.00</td><td class='num'>0.01 / 0.00 / 0.01</td></tr><tr><td class='name mono'>greedy_value</td><td class='num'><b>0.960</b></td><td class='num'>-0.48 ± 0.15</td><td class='num'>165.6</td><td class='num'>17.9</td><td class='num'>0.88</td><td class='num'>0.02 / 0.00 / 1.57</td></tr><tr><td class='name mono'>always_ask</td><td class='num'><b>0.957</b></td><td class='num'>+0.13 ± 0.14</td><td class='num'>163.0</td><td class='num'>17.6</td><td class='num'>1.00</td><td class='num'>0.00 / 0.00 / 0.00</td></tr><tr><td class='name mono'>always_offload</td><td class='num'><b>0.749</b></td><td class='num'>-2.87 ± 0.28</td><td class='num'>159.4</td><td class='num'>17.2</td><td class='num'>0.00</td><td class='num'>0.00 / 0.00 / 2.00</td></tr><tr><td class='name mono'>always_big</td><td class='num'><b>0.472</b></td><td class='num'>-9.22 ± 0.32</td><td class='num'>229.2</td><td class='num'>17.6</td><td class='num'>0.00</td><td class='num'>0.00 / 1.50 / 0.00</td></tr><tr><td class='name mono'>always_tiny</td><td class='num'><b>0.426</b></td><td class='num'>-10.07 ± 0.32</td><td class='num'>204.3</td><td class='num'>20.9</td><td class='num'>0.00</td><td class='num'>3.98 / 0.00 / 0.00</td></tr><tr><td class='name mono'>no_think</td><td class='num'><b>0.376</b></td><td class='num'>-9.19 ± 0.31</td><td class='num'>156.1</td><td class='num'>16.8</td><td class='num'>0.00</td><td class='num'>0.00 / 0.00 / 0.00</td></tr><tr><td class='name mono'>random_valid</td><td class='num'><b>0.022</b></td><td class='num'>-27.82 ± 0.16</td><td class='num'>383.5</td><td class='num'>36.2</td><td class='num'>1.02</td><td class='num'>1.06 / 0.54 / 1.17</td></tr><tr><td class='name mono'>random</td><td class='num'><b>0.025</b></td><td class='num'>-29.10 ± 0.18</td><td class='num'>376.7</td><td class='num'>34.7</td><td class='num'>1.32</td><td class='num'>1.38 / 0.74 / 1.35</td></tr></tbody></table></div></section>
 
 <section>
@@ -366,6 +373,101 @@ footer{border-top:1px solid var(--rule);padding-top:22px;color:var(--ink-3);font
   datasheet peaks; radio energy for cloud offload from published Wi-Fi figures; actuation energy
   from an explicit physical model. <b>Pending from R2:</b> per-call latency and energy on the
   RTX 3060.</p>
+</section>
+
+<section>
+  <h2>What the models actually do</h2>
+  <p class="lede measure">Every dialogue constant below is measured, not assumed — 19,800 queries
+  across three model tiers on one llama.cpp stack, one prompt template, one parser, shuffled
+  candidate order with the permutation recorded. This is R2's workstream; the numbers are read
+  here directly from the frozen artefact.</p>
+  <div class='scroll'><table><thead><tr><th>tier</th><th>model</th><th>k=2</th><th>k=3</th><th>k=4</th><th>pooled</th><th>&gamma;</th></tr></thead><tbody><tr><td class='name mono'>think_tiny</td><td class='mono' style='font-size:.8rem'>qwen2.5-0.5b-instruct-q8_0.gguf</td><td class='num'>0.495</td><td class='num'>0.393</td><td class='num'>0.327</td><td class='num'><b>0.405</b></td><td class='num'>0.867</td></tr><tr><td class='name mono'>think_big</td><td class='mono' style='font-size:.8rem'>llama-3.2-3b-instruct-q4_k_m.gguf</td><td class='num'>0.607</td><td class='num'>0.523</td><td class='num'>0.449</td><td class='num'><b>0.526</b></td><td class='num'>0.638</td></tr><tr><td class='name mono'>offload</td><td class='mono' style='font-size:.8rem'>qwen2.5-7b-instruct-q4_k_m.gguf</td><td class='num'>0.804</td><td class='num'>0.776</td><td class='num'>0.794</td><td class='num'><b>0.791</b></td><td class='num'>0.444</td></tr></tbody></table></div>
+  <p class="measure">Two things in that table did the most damage to this project's original
+  assumptions. <b>&gamma; falls monotonically with scale</b> (0.87 &rarr; 0.64 &rarr; 0.44) —
+  the opposite of what was assumed. A more capable model is more self-consistent, so re-querying
+  it buys less; a weak model looks variable because it is nearly random. Ranked by &gamma; alone
+  the 0.5B is the richest evidence source and the worst by every measure that matters, so
+  &gamma; must never be quoted on its own. And <b>the 7B's accuracy is flat in k</b>
+  (0.804 / 0.776 / 0.794) where the small models fall away — adding distractors costs them
+  heavily and costs the 7B nothing, which says its failure is pragmatic inference rather than
+  discrimination.</p>
+
+  <h3>The ceiling, not the price, is what rules the tiers out</h3>
+  <p class="measure">An irreversible <span class="mono">place()</span> needs roughly 0.85
+  posterior confidence to be worth attempting against a &plusmn;10 reward. Driving each tier
+  through the belief filter until it saturates:</p>
+  <div class="scroll"><table><thead><tr><th>tier</th><th>ceiling at k=3</th>
+  <th>reaches 0.85?</th></tr></thead><tbody>
+  <tr><td class="name mono">think_tiny</td><td class="num">0.374</td><td class="num dn">no</td></tr>
+  <tr><td class="name mono">think_big</td><td class="num">0.546</td><td class="num dn">no</td></tr>
+  <tr><td class="name mono">offload (7B)</td><td class="num">0.731</td><td class="num dn">no</td></tr>
+  <tr class="hl"><td class="name mono">ask (the human)</td><td class="num">0.947</td><td class="num up">yes</td></tr>
+  </tbody></table></div>
+  <p class="measure">Two independent implementations of that calculation — one per workstream —
+  agree within 0.010 on every model tier. It is not knife-edge on the 0.85 either: for
+  <i>any</i> threshold between 0.731 and 0.947 the human is the only usable channel, a 22-point
+  window. And the task is demonstrably solvable, because <span class="mono">ask</span> clears it
+  comfortably — had it failed too, the right conclusion would have been a broken dataset.</p>
+  <p class="measure"><b>Reasoning tokens do not close the gap.</b> Allowed to think step by step,
+  the 7B gains 0.023 (not distinguishable from zero) at 27&times; the tokens, and the 3B gets
+  <i>significantly worse</i> (&minus;0.059, McNemar p = 0.016). In 34 % of cases the 7B ignored the
+  instruction and answered directly, which splits the condition for free: 0.811 when it skipped
+  reasoning against 0.801 when it actually reasoned. <b>Quantisation is not the limit either</b> —
+  Q8 scores 0.592 against Q4's 0.603 (p = 0.500) and the two builds agree on 581 of 660 scenarios.
+  Neither better weights nor more thinking moves this tier.</p>
+
+  <h3>The scenario set was audited by three humans</h3>
+  <p class="measure">60 authored cores, blind sheet, no answer key, three independent annotators —
+  one of them outside the project entirely. The gate: a core survives only if every annotator
+  picked the keyed answer. <b>29 of 60 survive</b> (Fleiss &kappa; 0.592; two-rater sensitivity
+  39/60 at &kappa; 0.722). Adding the third reader cost 10 cores and 0.13 of &kappa;, which is a
+  finding about item difficulty rather than a reason to drop a rater.</p>
+  <div class="card"><h3>Human-hard and model-hard are different axes</h3>
+  <p class="measure">The models are <b>no worse</b> — the 3B is <i>better</i> (0.632 against 0.500)
+  — on the cores humans could not agree about. Model failure therefore does not track item
+  ambiguity: the models fail on expressions three independent people resolve identically. That
+  closes the strongest objection available to this result, which is that the models look bad
+  because the dataset is ambiguous. Measurably, it is not the explanation.</p></div>
+  <p class="measure"><b>Cost of the audit, stated plainly.</b> Two families are effectively gone —
+  <span class="mono">proximity</span> and <span class="mono">exclusion</span> retain one core each
+  — and <span class="mono">already_satisfied</span> is down to 9 items. Nothing may be cited from
+  any of the three. Two of the three annotators were project members; neither had seen the
+  ground-truth key, and the outside reader agreed with it most often of the three (0.840), so the
+  pool is not obviously biased toward the authored answers.</p>
+</section>
+
+<section>
+  <h2>Four silent failures, and what they have in common</h2>
+  <p class="lede measure">The most transferable thing this project produced is not a number. Over
+  its course, four separate settings were found to have silently failed to reach the code that
+  consumed them. None raised an error. All four produced plausible results.</p>
+  <div class="scroll"><table><thead><tr><th>setting</th><th>what happened</th>
+  <th>how it surfaced</th></tr></thead><tbody>
+  <tr><td class="mono">lambda_cloud</td><td>added to the reward after a policy was trained; the
+    stored config silently took the new default</td><td>a checkpoint refused to load for an
+    unrelated reason, and the reward diff was noticed while investigating</td></tr>
+  <tr><td class="mono">net_quality</td><td>connectivity swept at training time, never passed to
+    the evaluation env</td><td>scripted baselines returned byte-identical numbers at every link
+    quality — impossible if connectivity were varying</td></tr>
+  <tr><td class="mono">dialogue</td><td>policies trained on measured channel constants, scored in
+    a world still running the placeholders</td><td>a spot-check of one agent against a directly
+    computed figure disagreed</td></tr>
+  <tr><td class="mono">scenario ids</td><td>positional ids assigned <i>after</i> a filter, so every
+    surviving id named a different scenario than the raw table had measured</td>
+    <td>a test written specifically to pin the invariant against the real raw table</td></tr>
+  </tbody></table></div>
+  <p class="measure">Three of the four were caught by a number looking <i>wrong in a specific way</i>
+  rather than by anything breaking — identical values where variation was expected, a disagreement
+  between two routes to the same figure. The fourth was caught by a test that existed only because
+  someone went looking. <b>The common shape is a value that crosses a boundary — training to
+  evaluation, build to analysis, one workstream to the other — with nothing asserting it arrived.</b></p>
+  <p class="measure">The mitigations now in the code are correspondingly boring:
+  <span class="mono">evaluate_policy.py</span> refuses to score a policy whose stored
+  <span class="mono">RewardConfig</span> or environment arguments differ from the evaluation's, and
+  refuses to put policies trained in different worlds in one table;
+  <span class="mono">r2_build_dataset.py</span> pins id alignment against the real raw table; and
+  both reports are <b>generated</b> from the CSVs, because the earlier hand-written report is how a
+  stale headline survived months of changes to the code beneath it.</p>
 </section>
 
 <section>
