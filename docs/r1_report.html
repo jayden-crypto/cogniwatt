@@ -143,7 +143,7 @@ footer{border-top:1px solid var(--rule);padding-top:22px;color:var(--ink-3);font
   <div class="byline">
     <span><b>Owner</b> Jayden (R1)</span>
     <span><b>Status</b> complete &mdash; all channel constants measured, scenario set human-audited</span>
-    <span><b>Code</b> 10,894 lines Python &middot; 13 + 18 tests</span>
+    <span><b>Code</b> 10,900 lines Python &middot; 13 + 18 tests</span>
     <span><b>Compute</b> 176 runs · ≈20.0 h on M2 Air</span>
     <span><b>Team</b> 2 people, 2 workstreams</span>
   </div>
@@ -473,20 +473,26 @@ footer{border-top:1px solid var(--rule);padding-top:22px;color:var(--ink-3);font
 <section>
   <h2>Where the project stands</h2>
   <div class="cards">
-    <div class="card"><h3>Done</h3><p class="measure">Tier-1 environment, Bayesian belief filter,
-    task generator over 8 floorplans, frozen VED and dialogue interfaces, 9 scripted baselines,
-    PPO written from scratch, action masking, potential-based shaping, 13-test suite, hardware
-    calibration with two anchors, training-stability study, entropy annealing, cloud-price
-    derivation.</p></div>
-    <div class="card"><h3>Open — R1</h3><p class="measure">Choose and justify a final
-    <span class="mono">lambda_cloud</span>, or report the sweep as the result. Ablation
-    components are individually worth little; the report should say so plainly rather than
-    claim they are load-bearing.</p></div>
-    <div class="card"><h3>Blocked on R2</h3><p class="measure">Every dialogue constant is still an
-    R1 placeholder — <span class="mono">TIER_ACCURACY</span>,
-    <span class="mono">EVIDENCE_DECAY</span>, <span class="mono">DEFAULT_ASR_WER</span>, and the
-    colour-confusability matrix. The retrain on measured constants is what converts the headline
-    from a plausible simulation into a result grounded in measurement.</p></div>
+    <div class="card"><h3>Done</h3><p class="measure">Tier-1 environment, Bayesian belief
+    filter, task generator over 8 floorplans, frozen VED and dialogue interfaces, 9 scripted
+    baselines, PPO written from scratch, action masking, potential-based shaping, hardware
+    calibration on two anchors, training-stability study, entropy annealing, cloud-price
+    derivation, transfer audit, three model tiers measured end to end, a three-annotator human
+    audit of the scenario set, and a retrain on the audited artefact. 31 tests across two suites,
+    176 training runs.</p></div>
+    <div class="card"><h3>Stated, not fixed</h3><p class="measure">The
+    <span class="mono">ask</span> channel's accuracy is the one constant still assumed rather
+    than measured (0.97, scaled by a measured referent-recovery rate of 0.992). It is the number
+    the degeneracy result leans on hardest, and it is recorded as such in the artefact's
+    <span class="mono">ask_provenance</span>. Two scenario families retain a single core each and
+    a third is down to nine items; none may carry a number.</p></div>
+    <div class="card"><h3>Both workstreams closed</h3><p class="measure">Every dialogue constant
+    is measured — <span class="mono">TIER_ACCURACY</span> and
+    <span class="mono">EVIDENCE_DECAY</span> from 19,800 queries over three tiers,
+    <span class="mono">DEFAULT_ASR_WER</span> from a Whisper pipeline over 721 clips, and the
+    colour-confusability matrix measured and then <i>deleted</i>, because the assumption behind
+    it turned out to be false. The retrain on measured constants is done, on a scenario set three
+    humans independently audited.</p></div>
   </div>
   <p class="measure"><b>Deliberately not used:</b> gymnasium and stable-baselines3. The
   environment is pure NumPy so it runs bit-identically on arm64 macOS and x86_64 + CUDA, and the

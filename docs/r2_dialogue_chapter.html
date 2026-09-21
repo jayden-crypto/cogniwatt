@@ -1,3 +1,5 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The Saturation Ceiling</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -282,7 +284,7 @@ footer{
 <span class="c">   the others are already put away</span>
     </div>
 
-    <p>660 scenarios were expanded from <strong>58 hand-authored cores</strong> — six
+    <p>720 scenarios were expanded from <strong>60 hand-authored cores</strong>, of which <strong>321 from 29 cores</strong> survive the audit in the next section — six
     nouns crossed with ten kinds of pragmatic inference. A core is one contrast: a
     target plus distractors that are each individually defensible as the
     <em>wrong</em> answer. Scenarios from one core are permutations of a single
@@ -301,6 +303,80 @@ footer{
 
 <section>
   <div class="num">03</div>
+  <div class="body">
+    <h2>Three strangers checked the answers</h2>
+    <p>A dataset whose ground truth is not defensible invalidates every number
+    downstream, so the keys were audited rather than trusted. Sixty authored cores were
+    shown to <strong>three annotators</strong> — one of them outside the project
+    entirely — on a blind sheet: shuffled options, no answer key, no discussion. The
+    gate was set before any of them started, and is deliberately brutal: <strong>a core
+    survives only if every annotator independently picked the keyed answer.</strong></p>
+
+    <table>
+      <thead><tr><th></th><th>three annotators</th><th>two (Adit + outside reader)</th></tr></thead>
+      <tbody>
+        <tr><th>cores retained</th><td><strong>29 / 60</strong> (48%)</td><td>39 / 60</td></tr>
+        <tr><th>Fleiss κ</th><td><strong>0.592</strong> (47 fully rated)</td><td>0.722</td></tr>
+        <tr><th>raw agreement</th><td>0.617</td><td>0.800</td></tr>
+        <tr><th>verdicts</th><td>29 agree · 18 disagree · 13 undecidable</td><td>39 · 10 · 10</td></tr>
+      </tbody>
+    </table>
+
+    <p>Half the dataset did not survive. The third reader alone cost ten cores and 0.13
+    of κ — and pairwise agreement shows why: Adit and the outside reader agree at 0.800,
+    while the third reader agrees with either at about 0.63, reproduced across two
+    separate sittings. One careful person resolves roughly a third of these differently
+    from the other two. That is not carelessness; it is <strong>interpretive variance in
+    the pragmatic families</strong>, and both figures are reported rather than the
+    flattering one.</p>
+
+    <p>None of the 31 failed cores was re-keyed. Adjudicating them would mean choosing
+    between readings three people had already split on, which is contestable for exactly
+    the reason the core failed in the first place. Dropping needs no adjudication.</p>
+
+    <div class="claim">
+      <p>The obvious objection to this chapter is that the models look bad because the
+      dataset is ambiguous. It is measurably not the explanation: on the cores the
+      humans <em>could not</em> agree about, the models are no worse — the 3B is
+      <strong>better</strong>, 0.632 against 0.500. The models fail on referring
+      expressions that three independent people resolve identically.</p>
+    </div>
+
+    <p>The cost is real and worth stating plainly. Two families —
+    <code>proximity</code> and <code>exclusion</code> — retain a single core each, and
+    <code>already_satisfied</code> is down to nine items. <strong>No number in this
+    chapter is broken out by those three families.</strong> The worked example in the
+    previous section is drawn from <code>already_satisfied</code> because it is the
+    clearest illustration of what a pragmatic inference is; it is not evidence of
+    anything, and the family it belongs to no longer carries a measurement.</p>
+
+    <p>Re-scored on the 29 surviving cores — the numbers the frozen artefact carries,
+    and the ones every downstream result is trained on:</p>
+
+    <table>
+      <caption>Top-1 accuracy on the audited subset · 321 scenarios · CI clustered on 29 cores</caption>
+      <thead><tr><th>Tier</th><th>k=2</th><th>k=3</th><th>k=4</th><th>Pooled</th>
+      <th>Pooled, full corpus</th></tr></thead>
+      <tbody><tr><td>Qwen2.5-0.5B Q8_0</td><td>0.495</td><td>0.393</td><td>0.327</td><td><strong>0.405</strong></td><td>0.423</td></tr><tr><td>Llama-3.2-3B Q4_K_M</td><td>0.607</td><td>0.523</td><td>0.449</td><td><strong>0.526</strong></td><td>0.603</td></tr><tr><td>Qwen2.5-7B Q4_K_M</td><td>0.804</td><td>0.776</td><td>0.794</td><td><strong>0.791</strong></td><td>0.782</td></tr></tbody>
+    </table>
+
+    <p>Cleaning the dataset did not rescue the models — it moved the 3B <em>down</em>,
+    from 0.603 to 0.526, while the 7B barely shifted. The gradient between weakest and
+    strongest tier <em>widens</em> from 0.359 to 0.386, and it is now measured on a
+    single item set: all four configurations scored on the same 321 scenarios, so the
+    comparison is like-for-like rather than spanning items some tiers never saw. The
+    full-corpus figures in the next section remain the right ones for the paired
+    reasoning and quantisation comparisons, which were run before the audit on all 660.</p>
+
+    <p>Two of the three annotators were project members. Neither had seen the
+    ground-truth key before annotating, and the outside reader agreed with the key most
+    often of the three (0.840), so the pool is not visibly biased toward the authored
+    answers. Stated as a limitation rather than left to be discovered.</p>
+  </div>
+</section>
+
+<section>
+  <div class="num">04</div>
   <div class="body">
     <h2>The instrument nearly broke the study</h2>
     <p>The measurement protocol specified numbering the options <code>0. 1. 2.</code>
@@ -333,7 +409,7 @@ footer{
 </section>
 
 <section>
-  <div class="num">04</div>
+  <div class="num">05</div>
   <div class="body">
     <h2>What each model can do</h2>
     <p>Four configurations, one llama.cpp path, one prompt, one parser, and
@@ -371,7 +447,7 @@ footer{
 </section>
 
 <section>
-  <div class="num">05</div>
+  <div class="num">06</div>
   <div class="body">
     <h2>Asking twice does not help twice</h2>
     <p>Querying the same model again does not give a second independent opinion. A
@@ -416,7 +492,7 @@ footer{
 </section>
 
 <section>
-  <div class="num">06</div>
+  <div class="num">07</div>
   <div class="body">
     <h2>The ceiling</h2>
     <p>Accuracy and γ only matter through the decision they enable. Placing an object
@@ -477,7 +553,7 @@ footer{
 </section>
 
 <section>
-  <div class="num">07</div>
+  <div class="num">08</div>
   <div class="body">
     <h2>Scale buys state-tracking, not judgement</h2>
     <p>Scaling from 0.5B to 7B does not lift every kind of inference equally, and the
@@ -534,7 +610,7 @@ footer{
 </section>
 
 <section>
-  <div class="num">08</div>
+  <div class="num">09</div>
   <div class="body">
     <h2>They were not being rushed</h2>
     <p>Every number so far comes from a prompt that asks for a bare letter —
@@ -590,7 +666,7 @@ footer{
 </section>
 
 <section>
-  <div class="num">09</div>
+  <div class="num">10</div>
   <div class="body">
     <h2>It is scale, not quantisation</h2>
     <p>A 3B model at four bits scoring 0.603 supports two very different claims:
@@ -626,7 +702,7 @@ footer{
 </section>
 
 <section>
-  <div class="num">10</div>
+  <div class="num">11</div>
   <div class="body">
     <h2>What thinking costs</h2>
     <p>Measured on the discrete GPU on mains power, energy above idle, with a 12.34 W
@@ -657,7 +733,7 @@ footer{
 </section>
 
 <section>
-  <div class="num">11</div>
+  <div class="num">12</div>
   <div class="body">
     <h2>The channel that works</h2>
     <p>Asking the person is only as good as the speech recognition behind it. Short
@@ -690,7 +766,7 @@ footer{
 </section>
 
 <section>
-  <div class="num">12</div>
+  <div class="num">13</div>
   <div class="body">
     <h2>What would change these conclusions</h2>
     <ul class="caveats">
