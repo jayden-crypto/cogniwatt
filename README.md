@@ -12,6 +12,27 @@ physical hardware.
 
 ---
 
+## Dataset
+
+**→ [`data/`](https://github.com/jayden-crypto/cogniwatt/tree/main/data)** — 37 files,
+3.5 MB, versioned alongside the code. Every number in the report is computed from these
+artefacts; nothing is estimated.
+
+| File | What it is |
+| --- | --- |
+| `dialogue_measured.npz` | the frozen evidence artefact the policy trains on (`audited_321_contested_dropped`) |
+| `r2_scenarios.jsonl` | the 321 audited scenarios — 29 cores that all three readers resolved identically |
+| `r2_raw_*.csv.gz` | 28,920 raw model responses over 5 model configurations |
+| `r2_audit/` | the three independent human annotation passes (Readers A, B, C) |
+| `r2_core_audit.json` | audit result: 29 agree · 18 disagree · 13 undecidable, Fleiss κ 0.592 |
+| `anchor_m2_air.json`, `thermal_fit_m2.json`, `throttle_m2_air.json` | measured M2 Air power anchor, thermal fit and throttle curve |
+| `roofline_cost_table.json` | roofline extrapolation to Jetson / Pi / Coral |
+
+**Report:** [`submission/CogniWatt_Report.pdf`](https://github.com/jayden-crypto/cogniwatt/blob/main/submission/CogniWatt_Report.pdf)
+— 32 pages. Submission details in [`submission/SUBMISSION.md`](https://github.com/jayden-crypto/cogniwatt/blob/main/submission/SUBMISSION.md).
+
+---
+
 ## The idea in one table
 
 Every decision step, the agent picks one action from a single space:
