@@ -174,7 +174,7 @@ def fleiss_kappa(table: np.ndarray) -> float:
 def cmd_report(out_path: str, only: Optional[List[str]] = None) -> int:
     """`only` restricts the human pool -- the two-annotator sensitivity in R1's
     reply 7 (kappa 0.722 before the third reader) is reproduced with
-    `--annotators adit,annotator2`. It is a sensitivity, not a way to drop an
+    `--annotators reader_a,reader_b`. It is a sensitivity, not a way to drop an
     inconvenient rater: a pass is excluded for provenance, never for its numbers
     (see data/r2_audit_quarantine/README.md)."""
     sheet = {p["core_id"]: p for p in build_sheet()}

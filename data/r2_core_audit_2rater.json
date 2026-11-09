@@ -1,7 +1,7 @@
 {
   "annotators_human": [
-    "adit",
-    "annotator2"
+    "reader_a",
+    "reader_b"
   ],
   "annotators_model": [],
   "by_status": {
@@ -13,8 +13,8 @@
   "agreement": {
     "n_annotators": 2,
     "annotators": [
-      "adit",
-      "annotator2"
+      "reader_a",
+      "reader_b"
     ],
     "n_fully_rated": 50,
     "raw_agreement": 0.8,

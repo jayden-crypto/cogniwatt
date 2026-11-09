@@ -6,7 +6,7 @@ challenge that was raised against one of them and then resolved in its favour.
 
 ## What was raised
 
-Mid-audit, `annotator3.jsonl` was pulled from `data/r2_audit/` and held here over a
+Mid-audit, `reader_c.jsonl` was pulled from `data/r2_audit/` and held here over a
 provenance doubt: part of the sheet may have been filled in by the second
 annotator rather than by that annotator. Independence is the only property the audit
 measures, so a shared sheet would have invalidated the pass regardless of what
@@ -37,7 +37,7 @@ existed**, not a post-hoc exclusion. It is reported alongside the headline
 figure in the dialogue chapter and in `docs/r2_measurements.md` §3G, and the
 10-core / 0.13-κ gap between the rows is treated as a finding about item
 difficulty rather than as a reason to drop a rater. Pairwise agreement is
-Adit↔outside 0.800, Adit↔annotator 3 0.625, outside↔annotator 3 0.638: one careful reader
+A↔B 0.800, A↔C 0.625, B↔C 0.638: one careful reader
 resolves roughly a third of these differently from the other two, reproduced
 across two separate sittings.
 

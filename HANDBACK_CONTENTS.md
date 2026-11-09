@@ -15,7 +15,7 @@ Everything else in the zip you either authored or already have.
 
 | Path | What it is |
 | --- | --- |
-| **`data/r2_audit/*.jsonl`** | **the three annotator passes** — adit, one outside reader, annotator3. Your `r2_audit.py --report` reads this directory directly |
+| **`data/r2_audit/*.jsonl`** | **the three annotator passes** — reader_a, reader_b (outside the project), reader_c. Your `r2_audit.py --report` reads this directory directly |
 | **`data/r2_core_audit.json`** | **the verdict file** — 60 cores, 29 `agree`. This is the input to `r2_build_dataset.py --audit` |
 | `data/r2_audit_quarantine/` | provenance note on one pass that was held and then reinstated |
 | `scripts/r1_audit_import.py` | maps a copied result block onto your record format; your scorer is untouched |

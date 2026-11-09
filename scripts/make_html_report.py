@@ -608,7 +608,7 @@ def build() -> str:
   <span class="mono">proximity</span> and <span class="mono">exclusion</span> retain one core each
   — and <span class="mono">already_satisfied</span> is down to 9 items. Nothing may be cited from
   any of the three. Two of the three annotators were project members; neither had seen the
-  ground-truth key, and the outside reader agreed with it most often of the three (0.840), so the
+  ground-truth key, and Reader B agreed with it most often of the three (0.840), so the
   pool is not obviously biased toward the authored answers.</p>
 </section>
 

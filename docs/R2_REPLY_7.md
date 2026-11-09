@@ -13,25 +13,25 @@ sharper; the dataset takes real damage. One action needed from you (§4).
 
 | | |
 | --- | --- |
-| annotators | 3 humans (Adit, one outside reader, annotator 3) |
+| annotators | 3 humans (Readers A, B and C) |
 | cores retained | **29 / 60 (48 %)** → **348 / 720 scenarios** |
 | Fleiss κ | **0.592** (3 raters, 47 fully-rated cores) |
 | raw agreement | 0.617 |
 | verdicts | 29 agree · 18 disagree · 13 undecidable |
 
 Two-annotator sensitivity, before the third pass: **39/60 retained, κ = 0.722**.
-Adding a third reader cost 10 cores and 0.13 of κ. **Report both.** That drop is
+Adding Reader C cost 10 cores and 0.13 of κ. **Report both.** That drop is
 a finding about item difficulty, not a reason to drop a rater.
 
 Per-annotator, for the record:
 
 | annotator | committed | agreed with key |
 | --- | --- | --- |
-| Adit | 59/60 | 0.831 |
-| outside reader | 50/60 | 0.840 |
-| annotator 3 | 57/60 | **0.684** |
+| Reader A | 59/60 | 0.831 |
+| Reader B | 50/60 | 0.840 |
+| Reader C | 57/60 | **0.684** |
 
-Pairwise: Adit↔outside **0.800**, Adit↔annotator 3 0.625, outside↔annotator 3 0.638. One
+Pairwise: A↔B **0.800**, A↔C 0.625, B↔C 0.638. One
 careful reader resolves roughly a third of these differently from the other two,
 reproduced across two separate sittings. That is not carelessness; it is
 interpretive variance in the pragmatic families, and it is worth a sentence in
@@ -147,11 +147,11 @@ one sentence.
 Two of three annotators are project members. Neither had read
 `data/r2_scenarios.jsonl` (which carries `true_idx`) before annotating, and the
 third is outside the project entirely. State that plainly as a limitation rather
-than hoping nobody asks. The mitigation worth reporting: **the outside reader
+than hoping nobody asks. The mitigation worth reporting: **Reader B
 agreed with the key at 0.840, the highest of the three**, so the pool is not
 obviously biased toward the authored answers.
 
-One pass (annotator 3's) was quarantined mid-audit over a provenance doubt and then
+One pass (Reader C's) was quarantined mid-audit over a provenance doubt and then
 reinstated after a redo reproduced it at 0.978 on co-committed items. The
 quarantine note is in `data/r2_audit_quarantine/README.md`. Mentioning it costs
 nothing and the distinction it records is worth keeping visible: a pass may be

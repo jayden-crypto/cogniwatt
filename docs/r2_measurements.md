@@ -190,7 +190,7 @@ Two findings that change the §7b protocol:
 
 ## 3G. Human audit — the artefact now trains on 29 unanimous cores
 
-Three humans (Adit, one reader outside the project, annotator 3) filled in the
+Three humans (Readers A, B and C, with B from outside the project) filled in the
 blind sheet, no answer key, no discussion. The gate from `R2_HANDOFF.md` §4 —
 *if two humans disagree on the answer, the scenario is bad, drop it* — is
 applied as written: a core survives only if **every** annotator picked the
@@ -198,20 +198,20 @@ keyed answer. All figures below are recomputed here from
 `data/r2_audit/*.jsonl` with `scripts/r2_audit.py --report` and match R1's
 reply 7 exactly.
 
-| | three annotators | two (Adit + outside reader) |
+| | three annotators | two (Readers A + B) |
 | --- | --- | --- |
 | cores retained | **29 / 60** (48 %) → **348 / 720** scenarios | 39 / 60 |
 | Fleiss κ | **0.592** (47 fully-rated cores) | 0.722 |
 | raw agreement | 0.617 | 0.800 |
 | verdicts | 29 agree · 18 disagree · 13 undecidable | 39 · 10 · 10, 1 key-wrong |
 
-The third reader cost 10 cores and 0.13 of κ. Both figures are reported: the
+Reader C cost 10 cores and 0.13 of κ. Both figures are reported: the
 drop is a finding about item difficulty in the pragmatic families, not a
-reason to prefer the smaller pool. Pairwise, Adit↔outside 0.800, Adit↔annotator 3
-0.625, outside↔annotator 3 0.638 — one careful reader resolves about a third of
+reason to prefer the smaller pool. Pairwise, A↔B 0.800, A↔C
+0.625, B↔C 0.638 — one careful reader resolves about a third of
 these differently from the other two, reproduced across two sittings. No core
 came back `key_wrong` under three annotators (`bowl_own` was, under two, until
-the third reader split it): no key was *provably* wrong, but 31 were not
+Reader C split it): no key was *provably* wrong, but 31 were not
 defensible. **None of the 31 is re-keyed** — adjudicating them means choosing
 between readings three people already split on, which is contestable for
 exactly the reason the core failed. Dropping needs no adjudication.
@@ -331,7 +331,7 @@ without leaving the file. `n_samples` is a uniform 107 × 3 per tier.
 **Methods-section limitation, stated plainly:** two of the three annotators
 are project members. Neither had read `data/r2_scenarios.jsonl` (which
 carries `true_idx`) before annotating; the third is outside the project. The
-outside reader agreed with the key at 0.840 — the highest of the three — so the
+Reader B agreed with the key at 0.840 — the highest of the three — so the
 pool is not obviously biased toward the authored answers. One pass was
 quarantined mid-audit over a provenance doubt and reinstated after a redo
 reproduced it at 0.978 on co-committed items (`data/r2_audit_quarantine/`):
