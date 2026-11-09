@@ -1,0 +1,106 @@
+<meta charset="utf-8">
+<title>CogniWatt — title page</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@400;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  --ink:#0F172A; --ink-2:#334155; --ink-3:#64748B;
+  --paper:#F6F7F9; --card:#FFFFFF; --rule:#DDE3EA; --rule-2:#EEF1F5;
+  --blue:#2563EB; --amber:#B45309;
+}
+@page { size: letter; margin: 14mm 9.5mm; }
+*{box-sizing:border-box}
+html{color-scheme:light}
+body{
+  margin:0; width:744px; background:var(--paper); color:var(--ink);
+  font-family:"Source Sans 3",-apple-system,BlinkMacSystemFont,sans-serif;
+  font-size:17px; line-height:1.62; -webkit-font-smoothing:antialiased;
+}
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:11.5px;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--amber);font-weight:600;margin-bottom:20px}
+h1{font-family:"Zilla Slab",Georgia,serif;font-size:76px;font-weight:700;
+  letter-spacing:-.02em;line-height:1.05;margin:0}
+.tagline{font-size:23px;color:var(--ink-2);margin-top:16px;font-style:italic;max-width:60ch}
+.rule{border-bottom:2px solid var(--ink);margin:30px 0 0}
+h2{font-family:"Zilla Slab",serif;font-size:15px;font-weight:600;letter-spacing:.02em;
+  margin:0 0 12px;text-transform:uppercase;color:var(--ink-3);
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.12em}
+section{margin-top:34px}
+table{border-collapse:collapse;width:100%;background:var(--card);
+  border:1px solid var(--rule)}
+th{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--ink-3);font-weight:600;text-align:left;
+  padding:10px 16px;border-bottom:1.5px solid var(--rule)}
+td{padding:12px 16px;border-bottom:1px solid var(--rule-2);font-size:16.5px}
+tr:last-child td{border-bottom:none}
+td.roll{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;
+  text-align:right;font-size:15.5px;color:var(--ink-2)}
+td.role{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink-3);
+  text-align:right;white-space:nowrap}
+.links{background:var(--card);border:1px solid var(--rule);padding:4px 0}
+.link{display:flex;gap:14px;padding:11px 16px;border-bottom:1px solid var(--rule-2);
+  font-size:14.5px;align-items:baseline}
+.link:last-child{border-bottom:none}
+.link b{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--ink-3);font-weight:600;min-width:74px}
+.link span{font-family:"IBM Plex Mono",monospace;font-size:13px;color:var(--blue);
+  word-break:break-all}
+.contents{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--rule);
+  border:1px solid var(--rule)}
+.part{background:var(--card);padding:18px 20px}
+.part .k{font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--amber);font-weight:600;margin-bottom:7px}
+.part .t{font-family:"Zilla Slab",serif;font-size:19px;font-weight:600;line-height:1.2}
+.part .d{font-size:13.5px;color:var(--ink-2);margin-top:7px;line-height:1.5}
+footer{margin-top:40px;padding-top:16px;border-top:1px solid var(--rule);
+  font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--ink-3);
+  display:flex;justify-content:space-between;gap:20px}
+</style>
+
+<div class="eyebrow">Edge AI &amp; Robotics &middot; Conversational AI &middot; Course Project</div>
+<h1>CogniWatt</h1>
+<div class="tagline">Learning the economics of cognition for edge robots — teaching a
+robot when to compute, when to ask, and when to just act.</div>
+<div class="rule"></div>
+
+<section>
+  <h2>Submitted by</h2>
+  <table>
+    <tr><th>Name</th><th style="text-align:right">Roll number</th><th style="text-align:right">Workstream</th></tr>
+    <tr><td>Adit Uppal</td><td class="roll">102373004</td><td class="role">R2 — dialogue &amp; measurement</td></tr>
+    <tr><td>Karanveer Singh</td><td class="roll">102323049</td><td class="role">R1 — RL &amp; environment</td></tr>
+  </table>
+</section>
+
+<section>
+  <h2>Project links</h2>
+  <div class="links">
+    <div class="link"><b>Repository</b><span>https://github.com/jayden-crypto/cogniwatt</span></div>
+    <div class="link"><b>Dataset</b><span>https://github.com/jayden-crypto/cogniwatt/tree/main/data</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>Report contents</h2>
+  <div class="contents">
+    <div class="part">
+      <div class="k">Part I &middot; pp. 2–19</div>
+      <div class="t">CogniWatt</div>
+      <div class="d">Headline result, training stability, entropy annealing,
+      ablations, cloud-price derivation, hardware grounding, and four silent
+      failures.</div>
+    </div>
+    <div class="part">
+      <div class="k">Part II &middot; pp. 20–32</div>
+      <div class="t">The Saturation Ceiling</div>
+      <div class="d">28,920 measured responses over 660 scenarios and 5 model
+      configurations, with a three-annotator human audit of the ground truth.</div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span>Simulation only &middot; no physical hardware</span>
+  <span>Submitted 10 November 2026</span>
+</footer>

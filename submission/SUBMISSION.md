@@ -10,16 +10,15 @@ One submission per group; max 3 students.
 | Field | Value |
 | --- | --- |
 | **Project title** | CogniWatt — Learning the Economics of Cognition for Edge Robots |
-| **Group member 1** | *(name)* — *(roll number)* |
-| **Group member 2** | *(name)* — *(roll number)* |
+| **Group member 1** | Adit Uppal — 102373004 |
+| **Group member 2** | Karanveer Singh — 102323049 |
 | **GitHub repository** | https://github.com/jayden-crypto/cogniwatt |
 | **Dataset** | https://github.com/jayden-crypto/cogniwatt/tree/main/data |
-| **Project report (PDF)** | `submission/CogniWatt_Report.pdf` — 31 pages |
+| **Project report (PDF)** | `submission/CogniWatt_Report.pdf` — 32 pages |
 
-> Workstream split recorded in the repo: **R1 — Jayden** (RL, environment,
-> hardware calibration), **R2 — Adit** (dialogue measurement, SLM profiling,
-> scenario audit). Fill the two rows above with full names and roll numbers
-> as the course office records them.
+> Workstream split: **R1 — Karanveer Singh** (RL, environment, hardware
+> calibration), **R2 — Adit Uppal** (dialogue measurement, SLM profiling,
+> scenario audit). Two-person group; the course permits up to three.
 
 ---
 
@@ -34,11 +33,11 @@ the learned policy beats the strongest heuristic by **19.1 points of success**.
 
 ## What the report covers
 
-**Part I — R1 (pp. 1–18):** headline result, training-stability study, entropy
+**Part I — R1 (pp. 2–19):** headline result, training-stability study, entropy
 annealing, ablations, cloud-price derivation, a reproducibility finding,
 hardware grounding, and four silent failures.
 
-**Part II — R2 (pp. 19–31):** "The Saturation Ceiling" — 28,920 measured
+**Part II — R2 (pp. 20–32):** "The Saturation Ceiling" — 28,920 measured
 responses over 660 scenarios and 5 model configurations, three-annotator audit,
 and what each model tier can actually do.
 
